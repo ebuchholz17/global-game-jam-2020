@@ -19,7 +19,7 @@ static void drawBox (sprite_list *spriteList, float originX, float originY, rect
 }
 
 void initTicTacToeGame (memory_arena *memory, game_assets *assets, tictactoe_game* tictactoeGame) {
-    setRNGSeed(0); // TODO(ebuchholz): seed with time?
+    setRNGSeed((unsigned int)((unsigned long long)memory)); // TODO(ebuchholz): seed with time?
 
     *tictactoeGame = {};
 
@@ -81,6 +81,7 @@ void initTicTacToeGame (memory_arena *memory, game_assets *assets, tictactoe_gam
     oPlayerState->y = 180.0f;
     oPlayerState->animState.animationData = DATA_KEY_HITBOX_STANDING_WALK_0;
     oPlayerState->facing = CHARACTER_FACING_RIGHT;
+    oPlayerState->hitPoints = 100;
 
     character_state *xPlayerState = &tictactoeGame->xPlayerState;
     xPlayerState->grounded = true;
@@ -88,8 +89,10 @@ void initTicTacToeGame (memory_arena *memory, game_assets *assets, tictactoe_gam
     xPlayerState->y = 180.0f;
     xPlayerState->animState.animationData = DATA_KEY_HITBOX_STANDING_WALK_0;
     xPlayerState->facing = CHARACTER_FACING_LEFT;
+    xPlayerState->hitPoints = 100;
 
     tictactoeGame->cameraX = 384.0f;
+    tictactoeGame->battleState = BATTLE_STATE_NORMAL;
 }
 
 void drawHitBoxes (character_frame_data *currentFrame, sprite_list *spriteList, game_assets *assets, float x, float y) {
@@ -186,6 +189,7 @@ void updateCharacter (character_state *character, game_input *input, int playerI
             character->blocking = false;
             if (tttInput.punchJustPressed) {
                 character->state = ACTION_STATE_ATTACKING;
+                character->attackHit = false;
                 animation = getFrameName(DATA_KEY_HITBOX_STANDING_PUNCH_O, playerIndex);
             }
             else {
@@ -215,6 +219,26 @@ void updateCharacter (character_state *character, game_input *input, int playerI
             // locked in attack animation
             animation = character->animState.animationData;
         } break;
+        case ACTION_STATE_HITSTUN: {
+            animation = getFrameName(DATA_KEY_HITBOX_STANDING_HIT_O, playerIndex);
+            if (character->facing == CHARACTER_FACING_LEFT) {
+                character->x += KNOCKBACK * DELTA_TIME;
+            }
+            else {
+                character->x -= KNOCKBACK * DELTA_TIME;
+            }
+            character->timer++;
+            if (character->timer >= 10) {
+                character->state = ACTION_STATE_FREE;
+            }
+        } break;
+        case ACTION_STATE_BLOCKSTUN: {
+            animation = getFrameName(DATA_KEY_HITBOX_STANDING_BLOCK_O, playerIndex);
+            character->timer++;
+            if (character->timer >= 5) {
+                character->state = ACTION_STATE_FREE;
+            }
+        } break;
     }
 
     if (animation != character->animState.animationData) {
@@ -241,13 +265,13 @@ void drawCharacter (character_state *character, game_input *input, tictactoe_gam
         pushSpriteMatrix(scaleTransform, spriteList);
 
         addSprite(0.0f, 0.0f, assets, ATLAS_KEY_GAME, currentFrame->frameKey, spriteList, 0.0f, 1.0f);
-        drawHitBoxes(currentFrame, spriteList, assets, (float)-currentFrame->xOffset, (float)-currentFrame->yOffset);
+        //drawHitBoxes(currentFrame, spriteList, assets, (float)-currentFrame->xOffset, (float)-currentFrame->yOffset);
         popSpriteMatrix(spriteList);
         popSpriteMatrix(spriteList);
     }
     else {
         addSprite(character->x + currentFrame->xOffset, character->y + currentFrame->yOffset, assets, ATLAS_KEY_GAME, currentFrame->frameKey, spriteList, 0.0f, 1.0f);
-        drawHitBoxes(currentFrame, spriteList, assets, character->x, character->y);
+        //drawHitBoxes(currentFrame, spriteList, assets, character->x, character->y);
     }
 } 
 
@@ -305,7 +329,7 @@ void checkHitBoxIntersections (character_state *oPlayerState, character_state *x
             newHurtbox.max.y = hurtMin.y > hurtMax.y ? hurtMin.y : hurtMax.y;
 
             if (rectangleIntersection(newHitbox, newHurtbox)) {
-                drawBox(spriteList, 0.0f, 0.0f, newHurtbox, assets,    "hitbox_frame_data", 0, 0);
+                //drawBox(spriteList, 0.0f, 0.0f, newHurtbox, assets,    "hitbox_frame_data", 0, 0);
                 *xHit = true;
             }
         }
@@ -331,7 +355,7 @@ void checkHitBoxIntersections (character_state *oPlayerState, character_state *x
             newHurtbox.max.y = hurtMin.y > hurtMax.y ? hurtMin.y : hurtMax.y;
 
             if (rectangleIntersection(newHitbox, newHurtbox)) {
-                drawBox(spriteList, 0.0f, 0.0f, newHurtbox, assets,    "hitbox_frame_data", 0, 0);
+                //drawBox(spriteList, 0.0f, 0.0f, newHurtbox, assets,    "hitbox_frame_data", 0, 0);
                 *oHit = true;
             }
         }
@@ -339,7 +363,17 @@ void checkHitBoxIntersections (character_state *oPlayerState, character_state *x
 }
 
 void onPlayerHit (character_state *character, int playerIndex, tictactoe_game *ttg) {
+    character->state = ACTION_STATE_HITSTUN;
+    character->timer = 0;
+    character->hitPoints -= 20;
+    if (character->hitPoints <= 0) {
+        character->hitPoints = 0;
+    }
+}
 
+void onAttackBlocked (character_state *character, int playerIndex, tictactoe_game *ttg) {
+    character->state = ACTION_STATE_BLOCKSTUN;
+    character->timer = 0;
 }
 
 void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory, 
@@ -358,30 +392,166 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
 
         } break;
         case TICTACTOE_GAME_STATE_BATTLE: {
+            character_state *oPlayerState = &tictactoeGame->oPlayerState;
+            character_state *xPlayerState = &tictactoeGame->xPlayerState;
+            switch (tictactoeGame->battleState) {
+                case BATTLE_STATE_NORMAL: {
+                    updateCharacter(oPlayerState, input, 0, tictactoeGame);
+                    updateCharacter(xPlayerState, input, 1, tictactoeGame);
+
+                    float minCharX = oPlayerState->x < xPlayerState->x ? oPlayerState->x : xPlayerState-> x;
+                    float maxCharX = oPlayerState->x > xPlayerState->x ? oPlayerState->x : xPlayerState-> x;
+
+                    bool minCharOutOfCam = false;
+                    bool maxCharOutOfCam = false;
+                    if (maxCharX - tictactoeGame->cameraX > 100.0f) {
+                        maxCharOutOfCam = true;
+                    }
+                    if (minCharX - tictactoeGame->cameraX < -100.0f) {
+                        minCharOutOfCam = true;
+                    }
+
+                    if (minCharOutOfCam && maxCharOutOfCam) {
+                        // do nothing
+                    }
+                    else if (minCharOutOfCam) {
+                        if (maxCharX - minCharX > 200.0f) {
+                            float cameraX = tictactoeGame->cameraX;
+                            float offset = (cameraX + 100.0f) - maxCharX;
+                            tictactoeGame->cameraX -= offset;
+                        }
+                        else {
+                            tictactoeGame->cameraX = tictactoeGame->cameraX + (minCharX- (tictactoeGame->cameraX- 100.0f));
+                        }
+                    }
+                    else if (maxCharOutOfCam) {
+                        if (maxCharX - minCharX > 200.0f) {
+                            float cameraX = tictactoeGame->cameraX;
+                            float offset = minCharX - (cameraX - 100.0f);
+                            tictactoeGame->cameraX += offset;
+                        }
+                        else {
+                            tictactoeGame->cameraX = tictactoeGame->cameraX + (maxCharX- (tictactoeGame->cameraX+100.0f));
+                        }
+                    }
+                    if (tictactoeGame->cameraX < 192.0f) {
+                        tictactoeGame->cameraX = 192.0f;
+                    }
+                    if (tictactoeGame->cameraX > 575.0f) {
+                        tictactoeGame->cameraX = 575.0f;
+                    }
+
+                    if (oPlayerState->x > tictactoeGame->cameraX + 170.0f) {
+                        oPlayerState->x = tictactoeGame->cameraX + 170.0f;
+                    }
+                    if (oPlayerState->x < tictactoeGame->cameraX - 170.0f) {
+                        oPlayerState->x = tictactoeGame->cameraX - 170.0f;
+                    }
+                    if (xPlayerState->x > tictactoeGame->cameraX + 170.0f) {
+                        xPlayerState->x = tictactoeGame->cameraX + 170.0f;
+                    }
+                    if (xPlayerState->x < tictactoeGame->cameraX - 170.0f) {
+                        xPlayerState->x = tictactoeGame->cameraX - 170.0f;
+                    }
+
+                    bool oHit = false;
+                    bool xHit = false;
+                    checkHitBoxIntersections(oPlayerState, xPlayerState, tictactoeGame, spriteList, assets, &oHit, &xHit);
+
+                    bool gameOver = false;
+                    bool oIsWinner = false;
+                    if (oHit && !xPlayerState->attackHit) {
+                        xPlayerState->attackHit = true;
+                        if (oPlayerState->blocking) {
+                            onAttackBlocked(oPlayerState, 0, tictactoeGame);
+                        }
+                        else{
+                            onPlayerHit(oPlayerState, 0, tictactoeGame);
+                            if (oPlayerState->hitPoints == 0) {
+                                gameOver = true;
+                                oIsWinner = false;
+                            }
+                        }
+                    }
+                    if (xHit && !oPlayerState->attackHit) {
+                        oPlayerState->attackHit = true;
+                        if (xPlayerState->blocking) {
+                            onAttackBlocked(xPlayerState, 1, tictactoeGame);
+                        }
+                        else{
+                            onPlayerHit(xPlayerState, 1, tictactoeGame);
+                            if (xPlayerState->hitPoints == 0) {
+                                gameOver = true;
+                                oIsWinner = true;
+                            }
+                        }
+                    }
+
+                    if (gameOver) {
+                        tictactoeGame->battleState = BATTLE_STATE_OVER;
+                        tictactoeGame->oWonFight = oIsWinner;
+                        tictactoeGame->timer = 0.0f;
+                        tictactoeGame->vel = 0.0f;
+                    }
+                } break;
+                case BATTLE_STATE_OVER: {
+                    character_state *loser;
+                    int index;
+                    if (tictactoeGame->oWonFight) {
+                        loser = xPlayerState;
+                        index = 1;
+                    }
+                    else {
+                        loser = oPlayerState;
+                        index = 0;
+                    }
+
+                    data_key animation = getFrameName(DATA_KEY_HITBOX_STANDING_HIT_O, index);
+                    if (animation != loser->animState.animationData) {
+                        startCharacterAnimState(loser, animation);
+                    }
+                    else {
+                        updateCharacterAnimState(loser, tictactoeGame);
+                    }
+
+                    tictactoeGame->vel += 800.0f * DELTA_TIME;
+                    loser->y += tictactoeGame->vel * DELTA_TIME;
+                    tictactoeGame->timer += DELTA_TIME;
+                    if (tictactoeGame->timer >= 1.0f) {
+                        tictactoeGame->state = TICTACTOE_GAME_STATE_TIC_TAC_TOE;
+                    }
+                } break;
+            }
             pushSpriteTransform(spriteList, Vector2(-(tictactoeGame->cameraX - 192.0f), 0.0f));
             addSprite(0.0f, 0.0f, assets, ATLAS_KEY_GAME, "arena", spriteList);
 
-            character_state *oPlayerState = &tictactoeGame->oPlayerState;
-            character_state *xPlayerState = &tictactoeGame->xPlayerState;
-            updateCharacter(oPlayerState, input, 0, tictactoeGame);
-            updateCharacter(xPlayerState, input, 1, tictactoeGame);
             drawCharacter(oPlayerState, input, tictactoeGame, spriteList, assets);
             drawCharacter(xPlayerState, input, tictactoeGame, spriteList, assets);
 
-            bool oHit = false;
-            bool xHit = false;
-            checkHitBoxIntersections(oPlayerState, xPlayerState, tictactoeGame, spriteList, assets, &oHit, &xHit);
-
-            if (oHit) {
-                onPlayerHit(oPlayerState, 0, tictactoeGame);
-            }
-            if (xHit) {
-                onPlayerHit(xPlayerState, 1, tictactoeGame);
-            }
             //addSprite(oPlayerState->x, oPlayerState->y, assets, ATLAS_KEY_HITBOX_EDITOR,   "hitbox_frame_data", spriteList);
             //addSprite(xPlayerState->x, xPlayerState->y, assets, ATLAS_KEY_HITBOX_EDITOR,  "hitbox_frame_data", spriteList);
             popSpriteMatrix(spriteList);
 
+            // draw hitpoints
+            addSprite(10.0f, 10.0f, assets, ATLAS_KEY_GAME, "o", spriteList, 0.0f, 0.0f, 0.5f);
+
+            addSprite(374.0f, 10.0f, assets, ATLAS_KEY_GAME, "x", spriteList, 1.0f, 0.0f, 0.5f);
+
+            matrix3x3 posMatrix = translationMatrix(40.0f, 10.0f);
+            pushSpriteMatrix(posMatrix, spriteList);
+            matrix3x3 scaleTransform = scaleMatrix3x3((1.0f / 10.0f) * ((float)oPlayerState->hitPoints), 1.0f);
+            pushSpriteMatrix(scaleTransform, spriteList);
+            addSprite(0.0f, 0.0f, assets, ATLAS_KEY_GAME, "hp_segment", spriteList, 0.0f, 0.0f);
+            popSpriteMatrix(spriteList);
+            popSpriteMatrix(spriteList);
+
+            posMatrix = translationMatrix(344.0f, 10.0f);
+            pushSpriteMatrix(posMatrix, spriteList);
+            scaleTransform = scaleMatrix3x3(-(1.0f / 10.0f) * ((float)xPlayerState->hitPoints), 1.0f);
+            pushSpriteMatrix(scaleTransform, spriteList);
+            addSprite(0.0f, 0.0f, assets, ATLAS_KEY_GAME, "hp_segment", spriteList, 0.0f, 0.0f);
+            popSpriteMatrix(spriteList);
+            popSpriteMatrix(spriteList);
         } break;
     }
 }

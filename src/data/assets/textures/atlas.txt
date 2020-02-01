@@ -12,7 +12,7 @@ arena
   index: -1
 blue_reticule
   rotate: false
-  xy: 77, 2
+  xy: 91, 2
   size: 63, 57
   orig: 63, 57
   offset: 0, 0
@@ -24,9 +24,16 @@ eraser_hand
   orig: 246, 249
   offset: 0, 0
   index: -1
+hp_segment
+  rotate: false
+  xy: 2, 2
+  size: 12, 12
+  orig: 12, 12
+  offset: 0, 0
+  index: -1
 o
   rotate: false
-  xy: 42, 2
+  xy: 56, 2
   size: 33, 35
   orig: 33, 35
   offset: 0, 0
@@ -40,14 +47,14 @@ pencil_hand
   index: -1
 red_reticule
   rotate: false
-  xy: 142, 2
+  xy: 156, 2
   size: 63, 57
   orig: 63, 57
   offset: 0, 0
   index: -1
 standing_block_o
   rotate: false
-  xy: 686, 2
+  xy: 700, 2
   size: 42, 113
   orig: 42, 113
   offset: 0, 0
@@ -75,14 +82,14 @@ standing_block_x
   index: -1
 standing_hit_o
   rotate: false
-  xy: 627, 2
+  xy: 641, 2
   size: 57, 112
   orig: 57, 112
   offset: 0, 0
   index: -1
 standing_hit_x
   rotate: false
-  xy: 568, 2
+  xy: 582, 2
   size: 57, 112
   orig: 57, 112
   offset: 0, 0
@@ -96,7 +103,7 @@ standing_idle_0
   index: -1
 standing_idle_x
   rotate: false
-  xy: 730, 2
+  xy: 744, 2
   size: 52, 113
   orig: 52, 113
   offset: 0, 0
@@ -110,21 +117,21 @@ standing_punch_o
   index: -1
 standing_punch_x
   rotate: false
-  xy: 784, 2
+  xy: 798, 2
   size: 85, 113
   orig: 85, 113
   offset: 0, 0
   index: -1
 standing_walk_0
   rotate: false
-  xy: 925, 2
+  xy: 939, 2
   size: 52, 113
   orig: 52, 113
   offset: 0, 0
   index: -1
 standing_walk_x
   rotate: false
-  xy: 871, 2
+  xy: 885, 2
   size: 52, 113
   orig: 52, 113
   offset: 0, 0
@@ -138,14 +145,14 @@ tictactoe_backing
   index: -1
 ui
   rotate: false
-  xy: 207, 2
+  xy: 221, 2
   size: 359, 83
   orig: 359, 83
   offset: 0, 0
   index: -1
 x
   rotate: false
-  xy: 2, 2
+  xy: 16, 2
   size: 38, 34
   orig: 38, 34
   offset: 0, 0
