@@ -64,7 +64,18 @@ extern "C" void getGameAssetList (asset_list *assetList) {
 
     pushAsset(assetList, "assets/sounds/menu_button.wav", ASSET_TYPE_WAV, SOUND_KEY_MENU_BUTTON);
 
-    pushAsset(assetList, "assets/data/data.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_DATA);
+    pushAsset(assetList, "assets/data/standing_block_o.txt",      ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_O);
+    pushAsset(assetList, "assets/data/standing_block_walk_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_WALK_O);
+    pushAsset(assetList, "assets/data/standing_block_walk_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_WALK_X);
+    pushAsset(assetList, "assets/data/standing_block_x.txt",      ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_X);
+    pushAsset(assetList, "assets/data/standing_hit_o.txt",        ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_HIT_O);
+    pushAsset(assetList, "assets/data/standing_hit_x.txt",        ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_HIT_X);
+    pushAsset(assetList, "assets/data/standing_idle_o.txt",       ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_IDLE_0);
+    pushAsset(assetList, "assets/data/standing_idle_x.txt",       ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_IDLE_X);
+    pushAsset(assetList, "assets/data/standing_punch_o.txt",      ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_PUNCH_O);
+    pushAsset(assetList, "assets/data/standing_punch_x.txt",      ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_PUNCH_X);
+    pushAsset(assetList, "assets/data/standing_walk_o.txt",       ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_WALK_0);
+    pushAsset(assetList, "assets/data/standing_walk_x.txt",       ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_WALK_X);
 }
 
 extern "C" void parseGameAsset (void *assetData, void *secondAssetData, asset_type type, int key, int secondKey,
@@ -146,6 +157,7 @@ extern "C" void updateGame (game_input *input, game_memory *gameMemory, render_c
         //initPianoGame(&gameState->pianoGame);
         //initSkeletalGame(&gameState->memory, &gameState->skeletalGame);
         //initHitboxEditor(&gameState->memory, &gameState->assets, &gameState->hitboxEditor);
+        initTicTacToeGame(&gameState->memory, &gameState->assets, &gameState->tictactoeGame);
     }
     // general purpose temporary storage
     gameState->tempMemory = {};
@@ -208,7 +220,7 @@ extern "C" void updateGame (game_input *input, game_memory *gameMemory, render_c
     //updateSkeletalGame(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &gameState->skeletalGame, &spriteList, renderCommands);
     //updateControllerTestGame(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &spriteList);
     //updateHitboxEditor(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &spriteList, &gameState->hitboxEditor);
-    updateTestGame(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &spriteList);
+    updateTicTacToeGame(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &spriteList, &gameState->tictactoeGame);
     //if (gameState->hitboxEditor.requestFileLoad) {
     //    triggers->triggerFileWindow = true;
     //}

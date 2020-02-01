@@ -28,8 +28,8 @@ void updateTestGame (memory_arena *memory, memory_arena *tempMemory,
     if (!initialized) {
         initialized = true;
 
-        data_asset *hitboxData = assets->dataAssets[DATA_KEY_HITBOX_DATA];
-        loadHitboxData(assets, hitboxData->data, &animation);
+        //data_asset *hitboxData = assets->dataAssets[DATA_KEY_HITBOX_DATA];
+        //loadHitboxData(assets, hitboxData->data, &animation);
     }
     // memory for dynamically created strings
     memory_arena stringMemory = {};

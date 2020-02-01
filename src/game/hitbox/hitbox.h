@@ -16,7 +16,7 @@ struct character_frame_data {
 };
 
 struct character_animation_data {
-    character_frame_data frames[50];
+    character_frame_data frames[10];
     int numFrames;
 };
 

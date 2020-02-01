@@ -15,7 +15,8 @@
 
 #include "hitbox/hitbox.cpp"
 
-#include "test_game.cpp"
+//#include "test_game.cpp"
+#include "tictactoe_game.cpp"
 //#include "block_game.cpp"
 //#include "piano_game.cpp"
 //#include "skeletal_game.cpp"
@@ -40,6 +41,7 @@ struct game_state {
     //block_game blockGame;
     //skeletal_game skeletalGame;
     //hitbox_editor hitboxEditor;
+    tictactoe_game tictactoeGame;
 
     game_sounds sounds;
 
