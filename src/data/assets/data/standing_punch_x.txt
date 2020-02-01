@@ -85,7 +85,7 @@ standing_idle_x
 -91
 9
 -87
-standing_punch_o
+standing_punch_x
 -25
 0
 3

@@ -20,6 +20,11 @@ enum action_state {
     ACTION_STATE_ATTACKING
 };
 
+enum character_facing {
+    CHARACTER_FACING_LEFT,
+    CHARACTER_FACING_RIGHT
+};
+
 struct character_state {
     animation_state animState;
     action_state state;
@@ -27,6 +32,8 @@ struct character_state {
     float y;
 
     bool grounded;
+    bool blocking;
+    character_facing facing;
 };
 
 struct tictactoe_input {
@@ -45,6 +52,7 @@ struct tictactoe_game {
     tictactoe_game_state state;
 
     character_state oPlayerState;
+    character_state xPlayerState;
 
     float cameraX;
 };
