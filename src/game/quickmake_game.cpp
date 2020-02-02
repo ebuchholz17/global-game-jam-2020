@@ -68,9 +68,9 @@ extern "C" void getGameAssetList (asset_list *assetList) {
     pushAsset(assetList, "assets/sounds/writing.wav", ASSET_TYPE_WAV, SOUND_KEY_WRITING);
 
     pushAsset(assetList, "assets/data/standing_block_o.txt",      ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_O);
+    pushAsset(assetList, "assets/data/standing_block_x.txt",      ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_X);
     pushAsset(assetList, "assets/data/standing_block_walk_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_WALK_O);
     pushAsset(assetList, "assets/data/standing_block_walk_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_WALK_X);
-    pushAsset(assetList, "assets/data/standing_block_x.txt",      ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_X);
     pushAsset(assetList, "assets/data/standing_hit_o.txt",        ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_HIT_O);
     pushAsset(assetList, "assets/data/standing_hit_x.txt",        ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_HIT_X);
     pushAsset(assetList, "assets/data/standing_idle_o.txt",       ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_IDLE_0);
@@ -79,6 +79,27 @@ extern "C" void getGameAssetList (asset_list *assetList) {
     pushAsset(assetList, "assets/data/standing_punch_x.txt",      ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_PUNCH_X);
     pushAsset(assetList, "assets/data/standing_walk_o.txt",       ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_WALK_0);
     pushAsset(assetList, "assets/data/standing_walk_x.txt",       ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_WALK_X);
+
+    pushAsset(assetList, "assets/data/standing_kick_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_KICK_O);
+    pushAsset(assetList, "assets/data/standing_kick_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_KICK_X);
+    pushAsset(assetList, "assets/data/crouching_block_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_BLOCK_O);
+    pushAsset(assetList, "assets/data/crouching_block_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_BLOCK_X);
+    pushAsset(assetList, "assets/data/crouching_hit_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_HIT_O);
+    pushAsset(assetList, "assets/data/crouching_hit_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_HIT_X);
+    pushAsset(assetList, "assets/data/crouching_idle_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_IDLE_O);
+    pushAsset(assetList, "assets/data/crouching_idle_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_IDLE_X);
+    pushAsset(assetList, "assets/data/crouching_kick_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_KICK_O);
+    pushAsset(assetList, "assets/data/crouching_kick_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_KICK_X);
+    pushAsset(assetList, "assets/data/crouching_punch_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_PUNCH_O);
+    pushAsset(assetList, "assets/data/crouching_punch_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_CROUCHING_PUNCH_X);
+    pushAsset(assetList, "assets/data/jump_kick_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_JUMP_KICK_O);
+    pushAsset(assetList, "assets/data/jump_kick_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_JUMP_KICK_X);
+    pushAsset(assetList, "assets/data/jump_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_JUMP_O);
+    pushAsset(assetList, "assets/data/jump_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_JUMP_X);
+    pushAsset(assetList, "assets/data/jump_punch_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_JUMP_PUNCH_O);
+    pushAsset(assetList, "assets/data/jump_punch_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_JUMP_PUNCH_X);
+    pushAsset(assetList, "assets/data/hit_air_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_HIT_AIR_O);
+    pushAsset(assetList, "assets/data/hit_air_x.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_HIT_AIR_X);
 }
 
 extern "C" void parseGameAsset (void *assetData, void *secondAssetData, asset_type type, int key, int secondKey,

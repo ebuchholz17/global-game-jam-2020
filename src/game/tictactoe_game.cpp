@@ -1,6 +1,6 @@
 #include "tictactoe_game.h"
 
-static void drawBox (sprite_list *spriteList, float originX, float originY, rectangle box, game_assets *assets, char *boxKey, int additionalOffsetX, int additionalOffsetY) {
+static void drawBox (sprite_list *spriteList, float originX, float originY, rectangle box, game_assets *assets, char *boxKey, int additionalOffsetX, int additionalOffsetY, float alpha) {
     pushSpriteTransform(spriteList, Vector2((float)additionalOffsetX, (float)additionalOffsetY));
     pushSpriteTransform(spriteList, Vector2(originX, originY));
     pushSpriteTransform(spriteList, box.min);
@@ -10,7 +10,7 @@ static void drawBox (sprite_list *spriteList, float originX, float originY, rect
 
     pushSpriteMatrix(boxTransform, spriteList);
 
-    addSprite(0.0f, 0.0f, assets, ATLAS_KEY_HITBOX_EDITOR, boxKey, spriteList, 0.0f, 0.0f, 1.0f, 0.0f, 0.3f);
+    addSprite(0.0f, 0.0f, assets, ATLAS_KEY_HITBOX_EDITOR, boxKey, spriteList, 0.0f, 0.0f, 1.0f, 0.0f, alpha);
 
     popSpriteMatrix(spriteList);
     popSpriteMatrix(spriteList);
@@ -27,16 +27,16 @@ void initTicTacToeGame (memory_arena *memory, game_assets *assets, tictactoe_gam
     loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_STANDING_BLOCK_O]);
     tictactoeGame->numAnimationDatas++;
 
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_STANDING_BLOCK_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_STANDING_BLOCK_X]);
+    tictactoeGame->numAnimationDatas++;
+
     hitboxData = assets->dataAssets[DATA_KEY_HITBOX_STANDING_BLOCK_WALK_O];
     loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_STANDING_BLOCK_WALK_O]);
     tictactoeGame->numAnimationDatas++;
 
     hitboxData = assets->dataAssets[DATA_KEY_HITBOX_STANDING_BLOCK_WALK_X];
     loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_STANDING_BLOCK_WALK_X]);
-    tictactoeGame->numAnimationDatas++;
-
-    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_STANDING_BLOCK_X];
-    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_STANDING_BLOCK_X]);
     tictactoeGame->numAnimationDatas++;
 
     hitboxData = assets->dataAssets[DATA_KEY_HITBOX_STANDING_HIT_O];
@@ -69,6 +69,86 @@ void initTicTacToeGame (memory_arena *memory, game_assets *assets, tictactoe_gam
 
     hitboxData = assets->dataAssets[DATA_KEY_HITBOX_STANDING_WALK_X];
     loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_STANDING_WALK_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_STANDING_KICK_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_STANDING_KICK_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_STANDING_KICK_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_STANDING_KICK_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_BLOCK_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_BLOCK_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_BLOCK_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_BLOCK_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_HIT_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_HIT_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_HIT_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_HIT_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_IDLE_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_IDLE_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_IDLE_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_IDLE_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_KICK_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_KICK_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_KICK_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_KICK_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_PUNCH_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_PUNCH_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_CROUCHING_PUNCH_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_CROUCHING_PUNCH_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_JUMP_KICK_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_JUMP_KICK_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_JUMP_KICK_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_JUMP_KICK_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_JUMP_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_JUMP_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_JUMP_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_JUMP_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_JUMP_PUNCH_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_JUMP_PUNCH_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_JUMP_PUNCH_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_JUMP_PUNCH_X]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_HIT_AIR_O];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_HIT_AIR_O]);
+    tictactoeGame->numAnimationDatas++;
+
+    hitboxData = assets->dataAssets[DATA_KEY_HITBOX_HIT_AIR_X];
+    loadHitboxData(assets, hitboxData->data, &tictactoeGame->animations[DATA_KEY_HITBOX_HIT_AIR_X]);
     tictactoeGame->numAnimationDatas++;
 
     assert(tictactoeGame->numAnimationDatas <= MAX_NUM_FRAME_DATA);
@@ -106,12 +186,12 @@ void drawHitBoxes (character_frame_data *currentFrame, sprite_list *spriteList, 
     for (int i = 0; i < currentFrame->numHitboxes; ++i) {
         rectangle box = currentFrame->hitboxes[i];
         char *boxKey = "hitbox_frame_data";
-        drawBox(spriteList, x, y, box, assets, boxKey, 0, 0);
+        drawBox(spriteList, x, y, box, assets, boxKey, 0, 0, 0.3f);
     }
     for (int i = 0; i < currentFrame->numHurtboxes; ++i) {
         rectangle box = currentFrame->hurtboxes[i];
         char *boxKey = "hurtbox_frame_data";
-        drawBox(spriteList, x, y, box, assets, boxKey, 0, 0);
+        drawBox(spriteList, x, y, box, assets, boxKey, 0, 0, 0.3f);
     }
 }
 
@@ -203,46 +283,163 @@ data_key getFrameName (data_key key, int playerIndex) {
             return  DATA_KEY_HITBOX_STANDING_PUNCH_X;
         case DATA_KEY_HITBOX_STANDING_WALK_0:
             return  DATA_KEY_HITBOX_STANDING_WALK_X;
+        case DATA_KEY_HITBOX_STANDING_KICK_O:
+            return DATA_KEY_HITBOX_STANDING_KICK_X;
+        case DATA_KEY_HITBOX_CROUCHING_BLOCK_O:
+            return DATA_KEY_HITBOX_CROUCHING_BLOCK_X;
+        case DATA_KEY_HITBOX_CROUCHING_HIT_O:
+            return DATA_KEY_HITBOX_CROUCHING_HIT_X;
+        case DATA_KEY_HITBOX_CROUCHING_IDLE_O:
+            return DATA_KEY_HITBOX_CROUCHING_IDLE_X;
+        case DATA_KEY_HITBOX_CROUCHING_KICK_O:
+            return DATA_KEY_HITBOX_CROUCHING_KICK_X;
+        case DATA_KEY_HITBOX_CROUCHING_PUNCH_O:
+            return DATA_KEY_HITBOX_CROUCHING_PUNCH_X;
+        case DATA_KEY_HITBOX_JUMP_KICK_O:
+            return DATA_KEY_HITBOX_JUMP_KICK_X;
+        case DATA_KEY_HITBOX_JUMP_O:
+            return DATA_KEY_HITBOX_JUMP_X;
+        case DATA_KEY_HITBOX_JUMP_PUNCH_O:
+            return DATA_KEY_HITBOX_JUMP_PUNCH_X;
+        case DATA_KEY_HITBOX_HIT_AIR_O:
+            return DATA_KEY_HITBOX_HIT_AIR_X;
         }
     }
 }
 
-void updateCharacter (character_state *character, game_input *input, int playerIndex, tictactoe_game *ttg, game_sounds *gameSounds) {
+void updateCharacter (character_state *character, game_input *input, int playerIndex, tictactoe_game *ttg, game_sounds *gameSounds, float otherCharacterX) {
     tictactoe_input tttInput = {};
     getInputForPlayer(input, &tttInput, playerIndex);
 
     data_key animation = getFrameName(DATA_KEY_HITBOX_STANDING_IDLE_0, playerIndex);
+
     switch (character->state) {
         case ACTION_STATE_FREE: {
-            animation = getFrameName(DATA_KEY_HITBOX_STANDING_IDLE_0, playerIndex);
+            if(character->grounded && character->x < otherCharacterX) {
+                character->facing = CHARACTER_FACING_RIGHT;
+            }
+            else {
+                character->facing = CHARACTER_FACING_LEFT;
+            }
+
+            if (tttInput.upJustPressed) {
+                character->grounded = false;
+                character->state = ACTION_STATE_AIRBORNE;
+                character->velocity.y = -500.0f;
+                character->velocity.x = 0.0f;
+                animation = getFrameName(DATA_KEY_HITBOX_JUMP_O, playerIndex);
+                if (tttInput.right) {
+                    character->velocity.x += 300.0f;
+                }
+                if (tttInput.left) {
+                    character->velocity.x -= 300.0f;
+                }
+            }
+            else {
+                animation = getFrameName(DATA_KEY_HITBOX_STANDING_IDLE_0, playerIndex);
+                character->blocking = false;
+                character->crouching = false;
+                if (tttInput.down) {
+                    character->crouching = true;
+                    animation = getFrameName(DATA_KEY_HITBOX_CROUCHING_IDLE_O, playerIndex);
+                }
+                else {
+                    character->crouching = false;
+                }
+                if (tttInput.punchJustPressed) {
+                    character->state = ACTION_STATE_ATTACKING;
+                    character->attackHit = false;
+                    if (character->crouching) {
+                        animation = getFrameName(DATA_KEY_HITBOX_CROUCHING_PUNCH_O, playerIndex);
+                        character->attackInfo.damage = 10;
+                        character->attackInfo.high = false;
+                    }
+                    else {
+                        animation = getFrameName(DATA_KEY_HITBOX_STANDING_PUNCH_O, playerIndex);
+                        character->attackInfo.damage = 10;
+                        character->attackInfo.high = true;
+                    }
+                    playSound(SOUND_KEY_WHOOSH, gameSounds);
+                }
+                else if (tttInput.kickJustPressed) {
+                    character->state = ACTION_STATE_ATTACKING;
+                    character->attackHit = false;
+                    if (character->crouching) {
+                        animation = getFrameName(DATA_KEY_HITBOX_CROUCHING_KICK_O, playerIndex);
+                        character->attackInfo.damage = 25;
+                        character->attackInfo.high = false;
+                    }
+                    else {
+                        animation = getFrameName(DATA_KEY_HITBOX_STANDING_KICK_O, playerIndex);
+                        character->attackInfo.damage = 25;
+                        character->attackInfo.high = true;
+                    }
+                    playSound(SOUND_KEY_WHOOSH, gameSounds);
+                }
+                else {
+                    if (tttInput.left) {
+                        if (!character->crouching) {
+                            character->x -= WALK_SPEED * DELTA_TIME;
+                        }
+                        if (character->facing == CHARACTER_FACING_RIGHT) {
+                            character->blocking = true;
+                            if (!character->crouching) {
+                                animation = getFrameName(DATA_KEY_HITBOX_STANDING_BLOCK_WALK_O, playerIndex);
+                            }
+                            else{
+                                animation = getFrameName(DATA_KEY_HITBOX_CROUCHING_BLOCK_O, playerIndex);
+                            }
+                        }
+                        else {
+                            if (!character->crouching) {
+                                animation = getFrameName(DATA_KEY_HITBOX_STANDING_WALK_0, playerIndex);
+                            }
+                        }
+                    }
+                    if (tttInput.right) {
+                        if (!character->crouching) {
+                            character->x += WALK_SPEED * DELTA_TIME;
+                        }
+                        if (character->facing == CHARACTER_FACING_LEFT) {
+                            character->blocking = true;
+                            if (!character->crouching) {
+                                animation = getFrameName(DATA_KEY_HITBOX_STANDING_BLOCK_WALK_O, playerIndex);
+                            }
+                            else{
+                                animation = getFrameName(DATA_KEY_HITBOX_CROUCHING_BLOCK_O, playerIndex);
+                            }
+                        }
+                        else {
+                            if (!character->crouching) {
+                                animation = getFrameName(DATA_KEY_HITBOX_STANDING_WALK_0, playerIndex);
+                            }
+                        }
+                    }
+                }
+            }
+        } break;
+        case ACTION_STATE_AIRBORNE: {
+            animation = getFrameName(DATA_KEY_HITBOX_JUMP_O, playerIndex);
             character->blocking = false;
+            character->crouching = false;
+
             if (tttInput.punchJustPressed) {
                 character->state = ACTION_STATE_ATTACKING;
                 character->attackHit = false;
-                animation = getFrameName(DATA_KEY_HITBOX_STANDING_PUNCH_O, playerIndex);
+                animation = getFrameName(DATA_KEY_HITBOX_JUMP_PUNCH_O, playerIndex);
+                character->attackInfo.damage = 10;
+                character->attackInfo.high = true;
+
                 playSound(SOUND_KEY_WHOOSH, gameSounds);
             }
-            else {
-                if (tttInput.left) {
-                    character->x -= WALK_SPEED * DELTA_TIME;
-                    if (character->facing == CHARACTER_FACING_RIGHT) {
-                        character->blocking = true;
-                        animation = getFrameName(DATA_KEY_HITBOX_STANDING_BLOCK_WALK_O, playerIndex);
-                    }
-                    else {
-                        animation = getFrameName(DATA_KEY_HITBOX_STANDING_WALK_0, playerIndex);
-                    }
-                }
-                if (tttInput.right) {
-                    character->x += WALK_SPEED * DELTA_TIME;
-                    if (character->facing == CHARACTER_FACING_LEFT) {
-                        character->blocking = true;
-                        animation = getFrameName(DATA_KEY_HITBOX_STANDING_BLOCK_WALK_O, playerIndex);
-                    }
-                    else {
-                        animation = getFrameName(DATA_KEY_HITBOX_STANDING_WALK_0, playerIndex);
-                    }
-                }
+            else if (tttInput.kickJustPressed) {
+                character->state = ACTION_STATE_ATTACKING;
+                character->attackHit = false;
+                animation = getFrameName(DATA_KEY_HITBOX_JUMP_KICK_O, playerIndex);
+                character->attackInfo.damage = 25;
+                character->attackInfo.high = true;
+
+                playSound(SOUND_KEY_WHOOSH, gameSounds);
             }
         } break;
         case ACTION_STATE_ATTACKING: {
@@ -250,25 +447,82 @@ void updateCharacter (character_state *character, game_input *input, int playerI
             animation = character->animState.animationData;
         } break;
         case ACTION_STATE_HITSTUN: {
-            animation = getFrameName(DATA_KEY_HITBOX_STANDING_HIT_O, playerIndex);
-            if (character->facing == CHARACTER_FACING_LEFT) {
-                character->x += KNOCKBACK * DELTA_TIME;
+            character->timer++;
+            if (character->grounded) {
+                animation = getFrameName(DATA_KEY_HITBOX_STANDING_HIT_O, playerIndex);
+                if (character->facing == CHARACTER_FACING_LEFT) {
+                    character->x += KNOCKBACK * DELTA_TIME;
+                }
+                else {
+                    character->x -= KNOCKBACK * DELTA_TIME;
+                }
+                if (character->timer >= 10) {
+                    character->state = ACTION_STATE_FREE;
+                }
             }
             else {
-                character->x -= KNOCKBACK * DELTA_TIME;
-            }
-            character->timer++;
-            if (character->timer >= 10) {
-                character->state = ACTION_STATE_FREE;
+                animation = getFrameName(DATA_KEY_HITBOX_HIT_AIR_O, playerIndex);
+                if (character->timer >= 10) {
+                    character->state = ACTION_STATE_AIRBORNE;
+                    character->y += 30.0f;
+                    animation = getFrameName(DATA_KEY_HITBOX_JUMP_O, playerIndex);
+                }
             }
         } break;
+        case ACTION_STATE_HIT_GROUND: {
+            animation = getFrameName(DATA_KEY_HITBOX_HIT_AIR_O, playerIndex);
+        } break;
         case ACTION_STATE_BLOCKSTUN: {
-            animation = getFrameName(DATA_KEY_HITBOX_STANDING_BLOCK_O, playerIndex);
+            if (character->crouching) {
+                animation = getFrameName(DATA_KEY_HITBOX_CROUCHING_BLOCK_O, playerIndex);
+            }
+            else {
+                animation = getFrameName(DATA_KEY_HITBOX_STANDING_BLOCK_O, playerIndex);
+            }
+            if (character->facing == CHARACTER_FACING_LEFT) {
+                character->x += BLOCK_KNOCKBACK * DELTA_TIME;
+            }
+            else {
+                character->x -= BLOCK_KNOCKBACK * DELTA_TIME;
+            }
             character->timer++;
             if (character->timer >= 5) {
                 character->state = ACTION_STATE_FREE;
             }
         } break;
+    }
+
+    if (!character->grounded) {
+        character->x += character->velocity.x * DELTA_TIME;
+        character->velocity.y += GRAVITY * DELTA_TIME;
+        character->y += character->velocity.y * DELTA_TIME;
+
+        if (character->y >= 180.0f) {
+            character->y = 180.0f;
+            character->grounded = true;
+            if (character->state == ACTION_STATE_ATTACKING) {
+                character->state = ACTION_STATE_FREE;
+                animation = getFrameName(DATA_KEY_HITBOX_STANDING_IDLE_0, playerIndex);
+            }
+            if (character->state == ACTION_STATE_AIRBORNE) {
+                character->state = ACTION_STATE_FREE;
+            }
+            else if (character->state == ACTION_STATE_HITSTUN) {
+                character->state = ACTION_STATE_HIT_GROUND;
+                character->grounded = false;
+                character->velocity.y = -200.0f;
+                character->velocity.x = 0.0f;
+            }
+            else if (character->state == ACTION_STATE_HIT_GROUND) {
+                if (character->hitPoints <= 0) {
+                    character->eliminated = true;
+                }
+                else {
+                    character->state = ACTION_STATE_FREE;
+                    animation = getFrameName(DATA_KEY_HITBOX_CROUCHING_IDLE_O, playerIndex);
+                }
+            }
+        }
     }
 
     if (animation != character->animState.animationData) {
@@ -277,7 +531,12 @@ void updateCharacter (character_state *character, game_input *input, int playerI
     else {
         bool animComplete = updateCharacterAnimState(character, ttg);
         if (character->state == ACTION_STATE_ATTACKING && animComplete) {
-            character->state = ACTION_STATE_FREE;
+            if (character->grounded) {
+                character->state = ACTION_STATE_FREE;
+            }
+            else {
+                character->state = ACTION_STATE_AIRBORNE;
+            }
         }
     }
 
@@ -289,7 +548,7 @@ void drawCharacter (character_state *character, game_input *input, tictactoe_gam
     character_frame_data *currentFrame = &animData->frames[oPlayerAnimState->currentFrame];
 
     if (character->facing == CHARACTER_FACING_LEFT) {
-        matrix3x3 posMatrix = translationMatrix(character->x - currentFrame->xOffset, character->y - currentFrame->yOffset);
+        matrix3x3 posMatrix = translationMatrix(character->x - currentFrame->xOffset, character->y + currentFrame->yOffset);
         pushSpriteMatrix(posMatrix, spriteList);
         matrix3x3 scaleTransform = scaleMatrix3x3(-1.0f, 1.0f);
         pushSpriteMatrix(scaleTransform, spriteList);
@@ -359,7 +618,7 @@ void checkHitBoxIntersections (character_state *oPlayerState, character_state *x
             newHurtbox.max.y = hurtMin.y > hurtMax.y ? hurtMin.y : hurtMax.y;
 
             if (rectangleIntersection(newHitbox, newHurtbox)) {
-                //drawBox(spriteList, 0.0f, 0.0f, newHurtbox, assets,    "hitbox_frame_data", 0, 0);
+                //drawBox(spriteList, 0.0f, 0.0f, newHurtbox, assets,    "hitbox_frame_data", 0, 0, 1.0f);
                 *xHit = true;
             }
         }
@@ -385,19 +644,32 @@ void checkHitBoxIntersections (character_state *oPlayerState, character_state *x
             newHurtbox.max.y = hurtMin.y > hurtMax.y ? hurtMin.y : hurtMax.y;
 
             if (rectangleIntersection(newHitbox, newHurtbox)) {
-                //drawBox(spriteList, 0.0f, 0.0f, newHurtbox, assets,    "hitbox_frame_data", 0, 0);
+                //drawBox(spriteList, 0.0f, 0.0f, newHurtbox, assets,    "hitbox_frame_data", 0, 0, 1.0f);
                 *oHit = true;
             }
         }
     }
 }
 
-void onPlayerHit (character_state *character, int playerIndex, tictactoe_game *ttg) {
+void onPlayerHit (character_state *character, int playerIndex, tictactoe_game *ttg, int damage, float otherCharacterX) {
     character->state = ACTION_STATE_HITSTUN;
     character->timer = 0;
-    character->hitPoints -= 20;
+    character->hitPoints -= damage;
     if (character->hitPoints <= 0) {
         character->hitPoints = 0;
+        character->grounded = false;
+    }
+    if (!character->grounded) {
+        character->timer = -24;
+        character->velocity.y = -300.0f;
+        character->velocity.x = 0.0f;
+        character->y -= 30.0f;
+        if (character->x < otherCharacterX) {
+            character->velocity.x -= 100.0f;
+        }
+        else {
+            character->velocity.x += 100.0f;
+        }
     }
 }
 
@@ -953,7 +1225,6 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                         getInputForPlayer(input, &tttInput, 0);
                     }
                     if (tttInput.punchJustPressed) {
-
                         int numNeighborCells = 0;
                         int lastCell = -1;
                         bool *neighbors;
@@ -1118,7 +1389,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
             }
             
             if (zooming) {
-                float scaleAmount = 1.0f + 10.0f * tttState->zoomT;
+                float scaleAmount = 1.0f + 4.0f * tttState->zoomT;
 
                 vector2 center = cellPos(4);
 
@@ -1247,6 +1518,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
             switch (tictactoeGame->battleState) {
                 case BATTLE_STATE_STARTED: {
                     oPlayerState->grounded = true;
+                    oPlayerState->eliminated = false;
                     oPlayerState->x = 300.0f;
                     oPlayerState->y = 180.0f;
                     oPlayerState->animState.animationData = getFrameName(DATA_KEY_HITBOX_STANDING_WALK_0, 0);
@@ -1254,9 +1526,11 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     oPlayerState->hitPoints = tictactoeGame->battleResult.oHealth;
                     oPlayerState->state = ACTION_STATE_FREE;
                     oPlayerState->blocking = false;
+                    oPlayerState->crouching = false;
                     startCharacterAnimState(oPlayerState, oPlayerState->animState.animationData);
 
                     xPlayerState->grounded = true;
+                    xPlayerState->eliminated = false;
                     xPlayerState->x = 468.0f;
                     xPlayerState->y = 180.0f;
                     xPlayerState->animState.animationData = getFrameName(DATA_KEY_HITBOX_STANDING_WALK_0, 1);
@@ -1264,6 +1538,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     xPlayerState->hitPoints = tictactoeGame->battleResult.xHealth;
                     xPlayerState->state = ACTION_STATE_FREE;
                     xPlayerState->blocking = false;
+                    oPlayerState->crouching = false;
                     startCharacterAnimState(xPlayerState, xPlayerState->animState.animationData);
 
                     tictactoeGame->cameraX = 384.0f;
@@ -1345,8 +1620,8 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     }
                 } break;
                 case BATTLE_STATE_NORMAL: {
-                    updateCharacter(oPlayerState, input, 0, tictactoeGame, gameSounds);
-                    updateCharacter(xPlayerState, input, 1, tictactoeGame, gameSounds);
+                    updateCharacter(oPlayerState, input, 0, tictactoeGame, gameSounds, xPlayerState->x);
+                    updateCharacter(xPlayerState, input, 1, tictactoeGame, gameSounds, oPlayerState->x);
 
                     float minCharX = oPlayerState->x < xPlayerState->x ? oPlayerState->x : xPlayerState-> x;
                     float maxCharX = oPlayerState->x > xPlayerState->x ? oPlayerState->x : xPlayerState-> x;
@@ -1411,31 +1686,34 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     bool oIsWinner = false;
                     if (oHit && !xPlayerState->attackHit) {
                         xPlayerState->attackHit = true;
-                        if (oPlayerState->blocking) {
+                        attack_info attackInfo = xPlayerState->attackInfo;
+                        if (oPlayerState->state != ACTION_STATE_HIT_GROUND && oPlayerState->hitPoints > 0 && oPlayerState->blocking && oPlayerState->crouching != attackInfo.high) {
                             onAttackBlocked(oPlayerState, 0, tictactoeGame);
                         }
                         else{
-                            onPlayerHit(oPlayerState, 0, tictactoeGame);
-                            if (oPlayerState->hitPoints == 0) {
-                                gameOver = true;
-                                oIsWinner = false;
-                            }
+                            onPlayerHit(oPlayerState, 0, tictactoeGame, attackInfo.damage, xPlayerState->x);
                             playSound(SOUND_KEY_PUNCH, gameSounds);
                         }
                     }
                     if (xHit && !oPlayerState->attackHit) {
                         oPlayerState->attackHit = true;
-                        if (xPlayerState->blocking) {
+                        attack_info attackInfo = oPlayerState->attackInfo;
+                        if (xPlayerState->state != ACTION_STATE_HIT_GROUND && xPlayerState->hitPoints > 0 && xPlayerState->blocking && xPlayerState->crouching != attackInfo.high) {
                             onAttackBlocked(xPlayerState, 1, tictactoeGame);
                         }
                         else{
-                            onPlayerHit(xPlayerState, 1, tictactoeGame);
-                            if (xPlayerState->hitPoints == 0) {
-                                gameOver = true;
-                                oIsWinner = true;
-                            }
+                            onPlayerHit(xPlayerState, 1, tictactoeGame, attackInfo.damage, oPlayerState->x);
                             playSound(SOUND_KEY_PUNCH, gameSounds);
                         }
+                    }
+
+                    if (oPlayerState->eliminated) {
+                        gameOver = true;
+                        oIsWinner = false;
+                    }
+                    else if (xPlayerState->eliminated) {
+                        gameOver = true;
+                        oIsWinner = true;
                     }
 
                     if (gameOver) {
@@ -1457,16 +1735,16 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                         index = 0;
                     }
 
-                    data_key animation = getFrameName(DATA_KEY_HITBOX_STANDING_HIT_O, index);
-                    if (animation != loser->animState.animationData) {
-                        startCharacterAnimState(loser, animation);
-                    }
-                    else {
-                        updateCharacterAnimState(loser, tictactoeGame);
-                    }
+                    //data_key animation = getFrameName(DATA_KEY_HITBOX_STANDING_HIT_O, index);
+                    //if (animation != loser->animState.animationData) {
+                    //    startCharacterAnimState(loser, animation);
+                    //}
+                    //else {
+                    //    updateCharacterAnimState(loser, tictactoeGame);
+                    //}
 
-                    tictactoeGame->vel += 800.0f * DELTA_TIME;
-                    loser->y += tictactoeGame->vel * DELTA_TIME;
+                    //tictactoeGame->vel += 800.0f * DELTA_TIME;
+                    //loser->y += tictactoeGame->vel * DELTA_TIME;
                     tictactoeGame->timer += DELTA_TIME;
                     if (tictactoeGame->timer >= 1.0f) {
                         tictactoeGame->state = TICTACTOE_GAME_STATE_TIC_TAC_TOE;

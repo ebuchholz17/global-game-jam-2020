@@ -1,9 +1,11 @@
 #ifndef TICTACTOE_GAME_H
 #define TICTACTOE_GAME_H
 
-#define MAX_NUM_FRAME_DATA 20
+#define MAX_NUM_FRAME_DATA 40
 #define WALK_SPEED 100.0f
 #define KNOCKBACK 200.0f
+#define BLOCK_KNOCKBACK 75.0f
+#define GRAVITY 1500.0f
 
 enum tictactoe_game_state{
     TICTACTOE_GAME_STATE_TITLE,
@@ -20,9 +22,11 @@ struct animation_state {
 
 enum action_state {
     ACTION_STATE_FREE,
+    ACTION_STATE_AIRBORNE,
     ACTION_STATE_ATTACKING,
     ACTION_STATE_HITSTUN,
     ACTION_STATE_BLOCKSTUN,
+    ACTION_STATE_HIT_GROUND
 };
 
 enum character_facing {
@@ -30,11 +34,17 @@ enum character_facing {
     CHARACTER_FACING_RIGHT
 };
 
+struct attack_info {
+    int damage;
+    bool high;
+};
+
 struct character_state {
     animation_state animState;
     action_state state;
     float x;
     float y;
+    vector2 velocity;
 
     bool grounded;
     bool blocking;
@@ -43,6 +53,11 @@ struct character_state {
 
     int hitPoints;
     bool attackHit;
+    bool crouching;
+
+    bool eliminated;
+
+    attack_info attackInfo;
 };
 
 struct tictactoe_input {
