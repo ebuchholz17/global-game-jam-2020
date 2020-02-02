@@ -63,7 +63,9 @@ extern "C" void getGameAssetList (asset_list *assetList) {
     pushAsset(assetList, "assets/textures/atlas.txt", ASSET_TYPE_ATLAS, ATLAS_KEY_GAME, TEXTURE_KEY_GAME_ATLAS);
     pushAsset(assetList, "assets/textures/hitbox_editor_atlas.txt", ASSET_TYPE_ATLAS, ATLAS_KEY_HITBOX_EDITOR, TEXTURE_KEY_HITBOX_EDITOR_ATLAS);
 
-    pushAsset(assetList, "assets/sounds/menu_button.wav", ASSET_TYPE_WAV, SOUND_KEY_MENU_BUTTON);
+    pushAsset(assetList, "assets/sounds/whoosh.wav", ASSET_TYPE_WAV, SOUND_KEY_WHOOSH);
+    pushAsset(assetList, "assets/sounds/punch.wav", ASSET_TYPE_WAV, SOUND_KEY_PUNCH);
+    pushAsset(assetList, "assets/sounds/writing.wav", ASSET_TYPE_WAV, SOUND_KEY_WRITING);
 
     pushAsset(assetList, "assets/data/standing_block_o.txt",      ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_O);
     pushAsset(assetList, "assets/data/standing_block_walk_o.txt", ASSET_TYPE_DATA, DATA_KEY_HITBOX_STANDING_BLOCK_WALK_O);
@@ -221,7 +223,7 @@ extern "C" void updateGame (game_input *input, game_memory *gameMemory, render_c
     //updateSkeletalGame(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &gameState->skeletalGame, &spriteList, renderCommands);
     //updateControllerTestGame(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &spriteList);
     //updateHitboxEditor(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &spriteList, &gameState->hitboxEditor);
-    updateTicTacToeGame(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &spriteList, &gameState->tictactoeGame);
+    updateTicTacToeGame(&gameState->memory, &gameState->tempMemory, &gameState->assets, input, &spriteList, &gameState->tictactoeGame, &gameState->sounds);
     //if (gameState->hitboxEditor.requestFileLoad) {
     //    triggers->triggerFileWindow = true;
     //}

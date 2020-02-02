@@ -167,6 +167,9 @@ static void processWindowsMessages (HWND window, game_input *input, render_comma
                     }
                     input->rightKey.down = keyDown;
                 }
+                else if (keyCode == VK_ESCAPE) {
+                    programRunning = false;
+                }
 
                 if (keyDown) {
                     int altDown = (message.lParam & (1 << 29));

@@ -71,10 +71,13 @@ enum battle_state {
 enum tictactoe_phase {
     TICTACTOE_PHASE_CHOOSING_CELL,
     TICTACTOE_PHASE_BATTLE_OVER,
+    TICTACTOE_PHASE_HAND_DRAW,
+    TICTACTOE_PHASE_SYMBOL_PLACED,
     TICTACTOE_PHASE_ZOOM,
     TICTACTOE_PHASE_FADE_CELLS,
     TICTACTOE_PHASE_DECIDE_REINFORCEMENT,
     TICTACTOE_PHASE_CHOOSE_REINFORCEMENT,
+    TICTACTOE_PHASE_CHOOSE_TARGET,
     TICTACTOE_PHASE_WIN_PAUSE
 };
 
@@ -98,6 +101,8 @@ struct tictactoe_state {
     float zoomScale;
     float zoomTimer;
     float zoomT;
+
+    int targetingCell;
 };
 
 struct battle_result {
@@ -123,6 +128,7 @@ struct status_text_info {
 
 struct hand_draw_info {
     bool draw;
+    bool flip;
     vector2 pos;
 };
 
@@ -150,6 +156,8 @@ struct tictactoe_game {
     bool xNeighbors[9];
     bool destroyedCells[9];
     bool blinkingCells[9];
+    bool enemyCells[9];
+
     bool blinkOn;
 
     bool oWinsWholeGame;
@@ -157,6 +165,8 @@ struct tictactoe_game {
     bool repairPlayer;
     int targetRepairPlayer;
     int targetRepairHealth;
+
+    bool soundPlayed;
 };
 
 #endif

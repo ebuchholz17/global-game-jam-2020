@@ -659,7 +659,7 @@ WebGLRenderer.prototype = {
         gl.viewport(0, 0, renderCommands.windowWidth, renderCommands.windowHeight);
         //gl.enable(gl.DEPTH_TEST);
         //gl.enable(gl.CULL_FACE);
-        gl.clearColor(0.84,0.80,0.78, 1.0f);
+        gl.clearColor(0.84,0.80,0.78, 1.0);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
         var renderCommandOffset = 0;

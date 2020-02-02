@@ -207,7 +207,7 @@ data_key getFrameName (data_key key, int playerIndex) {
     }
 }
 
-void updateCharacter (character_state *character, game_input *input, int playerIndex, tictactoe_game *ttg) {
+void updateCharacter (character_state *character, game_input *input, int playerIndex, tictactoe_game *ttg, game_sounds *gameSounds) {
     tictactoe_input tttInput = {};
     getInputForPlayer(input, &tttInput, playerIndex);
 
@@ -220,6 +220,7 @@ void updateCharacter (character_state *character, game_input *input, int playerI
                 character->state = ACTION_STATE_ATTACKING;
                 character->attackHit = false;
                 animation = getFrameName(DATA_KEY_HITBOX_STANDING_PUNCH_O, playerIndex);
+                playSound(SOUND_KEY_WHOOSH, gameSounds);
             }
             else {
                 if (tttInput.left) {
@@ -411,8 +412,7 @@ vector2 cellPos (int i) {
     return Vector2(117.0f + 70.0f * col, 50.0f + 65.0f * row);
 }
 
-
-int checkIfOpponentInAdjacentCell (tictactoe_state *tttState, int cellNum) {
+void checkIfOpponentInAdjacentCell (tictactoe_state *tttState, int cellNum, bool *enemyCells) {
     ttt_cell *cell = &tttState->board[cellNum];
     int cellValue = cell->value;
     int opponentValue = cellValue == 1 ? 2 : 1;
@@ -425,31 +425,30 @@ int checkIfOpponentInAdjacentCell (tictactoe_state *tttState, int cellNum) {
         int oppCellNum = (row-1) * 3 + col;
         ttt_cell *neighborCell = &tttState->board[oppCellNum];
         if (neighborCell->value == opponentValue) {
-            return oppCellNum;
+            enemyCells[oppCellNum] = true;
         }
     }
     if (row < 2) {
         int oppCellNum = (row+1) * 3 + col;
         ttt_cell *neighborCell = &tttState->board[oppCellNum];
         if (neighborCell->value == opponentValue) {
-            return oppCellNum;
+            enemyCells[oppCellNum] = true;
         }
     }
     if (col > 0) {
         int oppCellNum = row * 3 + col - 1;
         ttt_cell *neighborCell = &tttState->board[oppCellNum];
         if (neighborCell->value == opponentValue) {
-            return oppCellNum;
+            enemyCells[oppCellNum] = true;
         }
     }
     if (col < 2) {
         int oppCellNum = row * 3 + col + 1;
         ttt_cell *neighborCell = &tttState->board[oppCellNum];
         if (neighborCell->value == opponentValue) {
-            return oppCellNum;
+            enemyCells[oppCellNum] = true;
         }
     }
-    return -1;
 }
 
 bool cellIsNeighbor (int cellIndex, int neighborIndex, tictactoe_state *tttState) {
@@ -524,8 +523,91 @@ bool checkForThreeInARow (tictactoe_state *tttState, int value) {
     return false;
 }
 
+void onTargetChosen (int cell, int oppCell, tictactoe_state *tttState, tictactoe_game *tictactoeGame, int playerIndex) {
+    tttState->phase = TICTACTOE_PHASE_ZOOM;
+    tttState->zoomTimer = 0.0f;
+    tttState->zoomScale = 1.0f;
+    tttState->oTurn = !tttState->oTurn;
+
+    tictactoeGame->battleState = BATTLE_STATE_STARTED;
+    ttt_cell *oCell;
+    ttt_cell *xCell;
+    if (playerIndex == 0) {
+        tictactoeGame->battleResult.oNum = cell;
+        tictactoeGame->battleResult.xNum = oppCell;
+
+        oCell = &tttState->board[cell];
+        xCell = &tttState->board[oppCell];
+    }
+    else {
+        tictactoeGame->battleResult.oNum = oppCell;
+        tictactoeGame->battleResult.xNum = cell;
+        
+        oCell = &tttState->board[oppCell];
+        xCell = &tttState->board[cell];
+    }
+    tictactoeGame->battleResult.oHealth = oCell->health;
+    tictactoeGame->battleResult.xHealth = xCell->health;
+
+    vector2 pos0 = cellPos(cell);
+    vector2 pos1 = cellPos(oppCell);
+    tttState->zoomTarget = pos0 + ((pos1 - pos0) * 0.5);
+
+    for (int i = 0; i < 9; ++i) {
+        tictactoeGame->oNeighbors[i] = false;
+        tictactoeGame->xNeighbors[i] = false;
+        if (cellIsNeighbor(tictactoeGame->battleResult.oNum, i, tttState)) {
+            tictactoeGame->oNeighbors[i] = true;
+        }
+        if (cellIsNeighbor(tictactoeGame->battleResult.xNum, i, tttState)) {
+            tictactoeGame->xNeighbors[i] = true;
+        }
+    }
+}
+
+void onReinforcementChosen (tictactoe_state *tttState, tictactoe_game *tictactoeGame, int playerIndex) {
+    tttState->phase = TICTACTOE_PHASE_ZOOM;
+    tttState->zoomTimer = 0.0f;
+    tttState->zoomScale = 1.0f;
+
+    tictactoeGame->battleState = BATTLE_STATE_STARTED;
+    ttt_cell *oCell;
+    ttt_cell *xCell;
+    battle_result *result = &tictactoeGame->battleResult;
+    if (playerIndex == 0) {
+        tictactoeGame->battleResult.oNum = tttState->selectedCell;
+    }
+    else {
+        tictactoeGame->battleResult.xNum = tttState->selectedCell;
+    }
+    oCell = &tttState->board[tictactoeGame->battleResult.oNum];
+    xCell = &tttState->board[tictactoeGame->battleResult.xNum];
+
+    if ((!tttState->oTurn && !result->oWin) || (tttState->oTurn && result->oWin)) {
+        tttState->targetingCell = tttState->selectedCell;
+    }
+
+    tictactoeGame->repairPlayer = true;
+    tictactoeGame->targetRepairPlayer = playerIndex;
+    if (playerIndex == 0) {
+        tictactoeGame->targetRepairHealth = oCell->health;
+        tictactoeGame->battleResult.oHealth = 0;
+        tictactoeGame->battleResult.xHealth = xCell->health;
+    }
+    else {
+        tictactoeGame->targetRepairHealth = xCell->health;
+        tictactoeGame->battleResult.oHealth = oCell->health;
+        tictactoeGame->battleResult.xHealth = 0;
+    }
+
+    //vector2 pos0 = cellPos(tictactoeGame->battleResult.oNum);
+    //vector2 pos1 = cellPos(tictactoeGame->battleResult.xNum);
+    //tttState->zoomTarget = pos0 + ((pos1 - pos0) * 0.5);
+}
+
 void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory, 
-                          game_assets *assets, game_input *input, sprite_list *spriteList, tictactoe_game *tictactoeGame)
+                          game_assets *assets, game_input *input, sprite_list *spriteList, tictactoe_game *tictactoeGame,
+                          game_sounds *gameSounds)
 {
     //static int frame = 0;
     //static int frameStep = 0;
@@ -566,6 +648,8 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
             bool promptToRepair = false;
             bool promptToChooseNeighbor = false;
             bool promptToChooseTarget = false;
+
+            hand_draw_info handDrawInfo = {};
 
             switch (tttState->phase) {
                 case TICTACTOE_PHASE_CHOOSING_CELL: {
@@ -609,67 +693,9 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                         if (cell->value == 0) {
                             cell->value = playerIndex + 1;
                             cell->health = 100;
-                            tttState->oTurn = !tttState->oTurn;
-                            int oppCell = checkIfOpponentInAdjacentCell(tttState, tttState->selectedCell);
-                            // go to battle
-                            if (oppCell != -1) {
-                                reticuleInfo.draw = false;
-                                //tictactoeGame->state = TICTACTOE_GAME_STATE_BATTLE;
-                                tttState->phase = TICTACTOE_PHASE_ZOOM;
-                                tttState->zoomTimer = 0.0f;
-                                tttState->zoomScale = 1.0f;
-
-                                tictactoeGame->battleState = BATTLE_STATE_STARTED;
-                                ttt_cell *oCell;
-                                ttt_cell *xCell;
-                                if (playerIndex == 0) {
-                                    tictactoeGame->battleResult.oNum = tttState->selectedCell;
-                                    tictactoeGame->battleResult.xNum = oppCell;
-
-                                    oCell = &tttState->board[tttState->selectedCell];
-                                    xCell = &tttState->board[oppCell];
-                                }
-                                else {
-                                    tictactoeGame->battleResult.oNum = oppCell;
-                                    tictactoeGame->battleResult.xNum = tttState->selectedCell;
-                                    
-                                    oCell = &tttState->board[oppCell];
-                                    xCell = &tttState->board[tttState->selectedCell];
-                                }
-                                tictactoeGame->battleResult.oHealth = oCell->health;
-                                tictactoeGame->battleResult.xHealth = xCell->health;
-
-                                vector2 pos0 = cellPos(tttState->selectedCell);
-                                vector2 pos1 = cellPos(oppCell);
-                                tttState->zoomTarget = pos0 + ((pos1 - pos0) * 0.5);
-
-                                for (int i = 0; i < 9; ++i) {
-                                    tictactoeGame->oNeighbors[i] = false;
-                                    tictactoeGame->xNeighbors[i] = false;
-                                    if (cellIsNeighbor(tictactoeGame->battleResult.oNum, i, tttState)) {
-                                        tictactoeGame->oNeighbors[i] = true;
-                                    }
-                                    if (cellIsNeighbor(tictactoeGame->battleResult.xNum, i, tttState)) {
-                                        tictactoeGame->xNeighbors[i] = true;
-                                    }
-                                }
-                            }
-                            else {
-                                bool oWins = checkForThreeInARow(tttState, 1);
-                                bool xWins = checkForThreeInARow(tttState, 2);
-                                if (oWins) {
-                                    tttState->phase = TICTACTOE_PHASE_WIN_PAUSE;
-                                    tictactoeGame->timer = 0.0f;
-                                    tictactoeGame->oWinsWholeGame = true;
-                                }
-                                else if (xWins) {
-                                    tttState->phase = TICTACTOE_PHASE_WIN_PAUSE;
-                                    tictactoeGame->timer = 0.0f;
-                                    tictactoeGame->oWinsWholeGame = false;
-                                }
-
-                            }
-                            tttState->selectedCell = 4;
+                            tttState->phase = TICTACTOE_PHASE_HAND_DRAW;
+                            tictactoeGame->soundPlayed = false;
+                            tictactoeGame->timer = 0.0f;
                         }
                     }
 
@@ -682,6 +708,163 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     else {
                         reticuleInfo.key = "red_reticule";
                         statusTextInfo.text = "P2's turn";
+                    }
+                    reticuleInfo.cellNum = tttState->selectedCell;
+
+                } break;
+                case TICTACTOE_PHASE_HAND_DRAW: {
+                    tictactoeGame->timer += DELTA_TIME;
+                    
+                    vector2 targetPos = cellPos(tttState->selectedCell);
+
+                    handDrawInfo.draw = true;
+                    if (tttState->oTurn) {
+                        handDrawInfo.flip = true;
+                    }
+                    if (tictactoeGame->timer < 0.6f) {
+                        float t = ((tictactoeGame->timer) / 0.6f);
+                        handDrawInfo.pos.x = targetPos.x;
+                        handDrawInfo.pos.y = 0.0f + t * (targetPos.y - 0.0f);
+                    }
+                    else if (tictactoeGame->timer < 0.8f) {
+                        handDrawInfo.pos.x = targetPos.x;
+                        handDrawInfo.pos.y = targetPos.y;
+                    }
+                    else if (tictactoeGame->timer < 1.6f) {
+                        float t = ((tictactoeGame->timer - 0.8f) / 0.8f);
+
+                        if (!tictactoeGame->soundPlayed) {
+                            tictactoeGame->soundPlayed = true;
+                            playSound(SOUND_KEY_WRITING, gameSounds);
+                        }
+
+                        handDrawInfo.pos.x = targetPos.x + sinf(2.0f * PI * t * 1.0f) * 25.0f;
+                        handDrawInfo.pos.y = targetPos.y + sinf(2.0f * PI * t * 2.0f) * 25.0f;
+                    }
+                    else if (tictactoeGame->timer < 1.8f) {
+                        handDrawInfo.pos.x = targetPos.x;
+                        handDrawInfo.pos.y = targetPos.y;
+                    }
+                    else if (tictactoeGame->timer < 2.4f) {
+                        float t = ((tictactoeGame->timer - 1.8f) / 0.6f);
+
+                        handDrawInfo.pos.x = targetPos.x;
+                        handDrawInfo.pos.y = 0.0f + (1.0f - t) * (targetPos.y - 0.0f);
+                    }
+                    else {
+                        tictactoeGame->timer = 0.0f;
+                        tttState->phase = TICTACTOE_PHASE_SYMBOL_PLACED;
+                    }
+                } break;
+                case TICTACTOE_PHASE_SYMBOL_PLACED: {
+                    for (int i = 0; i < 9; ++i) {
+                        tictactoeGame->enemyCells[i] = false;
+                    }
+                    checkIfOpponentInAdjacentCell(tttState, tttState->selectedCell, tictactoeGame->enemyCells);
+                    int numEnemyCells = 0;
+                    int lastEnemyCell = -1;
+                    for (int i = 0; i < 9; ++i) {
+                        tictactoeGame->blinkingCells[i] = false;
+                        if (tictactoeGame->enemyCells[i]) {
+                            ++numEnemyCells;
+                            lastEnemyCell = i;
+                            tictactoeGame->blinkingCells[i] = true;
+                        }
+                    }
+                    // go to battle
+                    int playerIndex = tttState->oTurn ? 0 : 1;
+                    if (numEnemyCells > 0) {
+                        reticuleInfo.draw = false;
+                        if (numEnemyCells == 1) {
+                            int oppCell = lastEnemyCell;
+                            onTargetChosen(tttState->selectedCell, oppCell, tttState, tictactoeGame, playerIndex);
+                        }
+                        else {
+                            tttState->phase = TICTACTOE_PHASE_CHOOSE_TARGET;
+                            tttState->targetingCell = tttState->selectedCell;
+                            tictactoeGame->timer = 0.0f;
+                        }
+                        //tictactoeGame->state = TICTACTOE_GAME_STATE_BATTLE;
+                    }
+                    else {
+                        tttState->oTurn = !tttState->oTurn;
+                        bool oWins = checkForThreeInARow(tttState, 1);
+                        bool xWins = checkForThreeInARow(tttState, 2);
+                        if (oWins) {
+                            tttState->phase = TICTACTOE_PHASE_WIN_PAUSE;
+                            tictactoeGame->timer = 0.0f;
+                            tictactoeGame->oWinsWholeGame = true;
+                        }
+                        else if (xWins) {
+                            tttState->phase = TICTACTOE_PHASE_WIN_PAUSE;
+                            tictactoeGame->timer = 0.0f;
+                            tictactoeGame->oWinsWholeGame = false;
+                        }
+                        else {
+                            tttState->phase = TICTACTOE_PHASE_CHOOSING_CELL;
+                        }
+
+                    }
+                    tttState->selectedCell = 4;
+                } break;
+                case TICTACTOE_PHASE_CHOOSE_TARGET: {
+                    tictactoeGame->timer += DELTA_TIME;
+                    blinking = true;
+                    if (tictactoeGame->timer >= 0.4f) {
+                        tictactoeGame->blinkOn = !tictactoeGame->blinkOn;
+                        tictactoeGame->timer -= 0.4f;
+                    }
+
+                    tictactoe_input tttInput = {};
+                    if (tttState->oTurn) {
+                        getInputForPlayer(input, &tttInput, 0);
+                    }
+                    else {
+                        getInputForPlayer(input, &tttInput, 1);
+                    }
+                    if (tttInput.upJustPressed) {
+                        int newSelectedCell = tttState->selectedCell - 3;
+                        if (newSelectedCell < 0) {
+                            newSelectedCell += 9;
+                        }
+                        tttState->selectedCell = newSelectedCell;
+                    }
+                    if (tttInput.downJustPressed) {
+                        int newSelectedCell = tttState->selectedCell + 3;
+                        if (newSelectedCell >= 9) {
+                            newSelectedCell -= 9;
+                        }
+                        tttState->selectedCell = newSelectedCell;
+                    }
+                    if (tttInput.leftJustPressed) {
+                        int newSelectedCell = tttState->selectedCell - 1;
+                        if (newSelectedCell < 0) {
+                            newSelectedCell += 9;
+                        }
+                        tttState->selectedCell = newSelectedCell;
+                    }
+                    if (tttInput.rightJustPressed) {
+                        int newSelectedCell = tttState->selectedCell + 1;
+                        if (newSelectedCell >= 9) {
+                            newSelectedCell -= 9;
+                        }
+                        tttState->selectedCell = newSelectedCell;
+                    }
+                    if (tttInput.punchJustPressed) {
+                        if (tictactoeGame->enemyCells[tttState->selectedCell] && !tictactoeGame->destroyedCells[tttState->selectedCell]) {
+                            onTargetChosen(tttState->targetingCell, tttState->selectedCell, tttState, tictactoeGame, tttState->oTurn ? 0 : 1);
+                        }
+                    }
+
+                    statusTextInfo.draw = true;
+                    statusTextInfo.text = "choose target";
+                    statusTextInfo.xOffset = -15.0f;
+                    reticuleInfo.draw = true;
+                    if (!tttState->oTurn) {
+                        reticuleInfo.key = "red_reticule";
+                    }
+                    else {
+                        reticuleInfo.key = "blue_reticule";
                     }
                     reticuleInfo.cellNum = tttState->selectedCell;
 
@@ -723,8 +906,33 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                         tictactoeGame->timer = 0.0f;
                     }
                     else {
-                        tttState->phase = TICTACTOE_PHASE_FADE_CELLS;
-                        tictactoeGame->timer = 0.0f;
+                        int numEnemyCells = 0;
+                        int lastEnemyCell = -1;
+                        if ((!tttState->oTurn && result->oWin) || (tttState->oTurn && !result->oWin)) {
+                            for (int i = 0; i < 9; ++i) {
+                                tictactoeGame->blinkingCells[i] = false;
+                                if (tictactoeGame->enemyCells[i] && !tictactoeGame->destroyedCells[i]) {
+                                    ++numEnemyCells;
+                                    lastEnemyCell = i;
+                                    tictactoeGame->blinkingCells[i] = true;
+                                }
+                            }
+                        }
+                        if (numEnemyCells > 0) {
+                            if (numEnemyCells == 1) {
+                                tttState->selectedCell = lastEnemyCell;
+                                onTargetChosen(tttState->targetingCell, tttState->selectedCell, tttState, tictactoeGame, tttState->oTurn ? 0 : 1);
+                            }
+                            else {
+                                tttState->oTurn = !tttState->oTurn;
+                                tttState->phase = TICTACTOE_PHASE_CHOOSE_TARGET;
+                                tictactoeGame->timer = 0.0f;
+                            }
+                        }
+                        else {
+                            tttState->phase = TICTACTOE_PHASE_FADE_CELLS;
+                            tictactoeGame->timer = 0.0f;
+                        }
                     }
 
                 } break;
@@ -737,19 +945,66 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     }
                     promptToRepair = true;
                     tictactoe_input tttInput = {};
+                    int playerIndex;
                     if (tictactoeGame->oWonFight) {
+                        playerIndex = 1;
                         getInputForPlayer(input, &tttInput, 1);
                     }
                     else {
+                        playerIndex = 0;
                         getInputForPlayer(input, &tttInput, 0);
                     }
                     if (tttInput.punchJustPressed) {
-                        tttState->phase = TICTACTOE_PHASE_CHOOSE_REINFORCEMENT;
-                        tictactoeGame->timer = 0.0f;
+
+                        int numNeighborCells = 0;
+                        int lastCell = -1;
+                        bool *neighbors;
+                        if (tictactoeGame->battleResult.oWin) {
+                            neighbors = tictactoeGame->xNeighbors;
+                            playerIndex = 1;
+                        }
+                        else {
+                            neighbors = tictactoeGame->oNeighbors; 
+                            playerIndex = 0;
+                        }
+                        for (int i = 0; i < 9; ++i) {
+                            if (neighbors[i] && !tictactoeGame->destroyedCells[i]) {
+                                ++numNeighborCells;
+                                lastCell = i;
+                            }
+                        }
+                        if (numNeighborCells == 1) {
+                            tttState->selectedCell = lastCell;
+                            tttState->phase = TICTACTOE_PHASE_CHOOSE_REINFORCEMENT;
+
+                            onReinforcementChosen(tttState, tictactoeGame, playerIndex);
+                        }
+                        else {
+                            tttState->phase = TICTACTOE_PHASE_CHOOSE_REINFORCEMENT;
+                            tictactoeGame->timer = 0.0f;
+                        }
                     }
                     else if (tttInput.kickJustPressed) {
-                        tttState->phase = TICTACTOE_PHASE_FADE_CELLS;
-                        tictactoeGame->timer = 0.0f;
+                        int numEnemyCells = 0;
+                        battle_result *result = &tictactoeGame->battleResult;
+                        if ((!tttState->oTurn && result->oWin) || (tttState->oTurn && !result->oWin)) {
+                            for (int i = 0; i < 9; ++i) {
+                                tictactoeGame->blinkingCells[i] = false;
+                                if (tictactoeGame->enemyCells[i] && !tictactoeGame->destroyedCells[i]) {
+                                    ++numEnemyCells;
+                                    tictactoeGame->blinkingCells[i] = true;
+                                }
+                            }
+                        }
+                        if (numEnemyCells > 0) {
+                            tttState->oTurn = !tttState->oTurn;
+                            tttState->phase = TICTACTOE_PHASE_CHOOSE_TARGET;
+                            tictactoeGame->timer = 0.0f;
+                        }
+                        else {
+                            tttState->phase = TICTACTOE_PHASE_FADE_CELLS;
+                            tictactoeGame->timer = 0.0f;
+                        }
                     }
                 } break;
                 case TICTACTOE_PHASE_CHOOSE_REINFORCEMENT: {
@@ -808,38 +1063,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                             playerIndex = 0;
                         }
                         if (neighbors[tttState->selectedCell] && !tictactoeGame->destroyedCells[tttState->selectedCell]) {
-                            tttState->phase = TICTACTOE_PHASE_ZOOM;
-                            tttState->zoomTimer = 0.0f;
-                            tttState->zoomScale = 1.0f;
-
-                            tictactoeGame->battleState = BATTLE_STATE_STARTED;
-                            ttt_cell *oCell;
-                            ttt_cell *xCell;
-                            if (playerIndex == 0) {
-                                tictactoeGame->battleResult.oNum = tttState->selectedCell;
-                            }
-                            else {
-                                tictactoeGame->battleResult.xNum = tttState->selectedCell;
-                            }
-                            oCell = &tttState->board[tictactoeGame->battleResult.oNum];
-                            xCell = &tttState->board[tictactoeGame->battleResult.xNum];
-
-                            tictactoeGame->repairPlayer = true;
-                            tictactoeGame->targetRepairPlayer = playerIndex;
-                            if (playerIndex == 0) {
-                                tictactoeGame->targetRepairHealth = oCell->health;
-                                tictactoeGame->battleResult.oHealth = 0;
-                                tictactoeGame->battleResult.xHealth = xCell->health;
-                            }
-                            else {
-                                tictactoeGame->targetRepairHealth = xCell->health;
-                                tictactoeGame->battleResult.oHealth = oCell->health;
-                                tictactoeGame->battleResult.xHealth = 0;
-                            }
-
-                            //vector2 pos0 = cellPos(tictactoeGame->battleResult.oNum);
-                            //vector2 pos1 = cellPos(tictactoeGame->battleResult.xNum);
-                            //tttState->zoomTarget = pos0 + ((pos1 - pos0) * 0.5);
+                            onReinforcementChosen(tttState, tictactoeGame, playerIndex);
                         }
                     }
 
@@ -941,6 +1165,10 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                             }
                         }
                     }
+
+                    if (tttState->phase == TICTACTOE_PHASE_HAND_DRAW && i == tttState->selectedCell && tictactoeGame->timer < 1.2f) {
+                        alpha = 0.0f;
+                    } 
                     if (cell->value == 1) {
                         addSprite(pos.x, pos.y, assets, ATLAS_KEY_GAME, "o", spriteList, 0.5f, 0.5f, 1.0f, 0.0f, alpha, tint);
                     }
@@ -985,6 +1213,23 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                 addText(x, 110.0f, questionText2, assets, TEXTURE_KEY_FONT_2, spriteList);
                 addText(x, 130.0f, yesText, assets, TEXTURE_KEY_FONT_2, spriteList);
                 addText(x, 145.0f, noText, assets, TEXTURE_KEY_FONT_2, spriteList);
+            }
+
+            if (handDrawInfo.draw) {
+                if (handDrawInfo.flip) {
+                    matrix3x3 posMatrix = translationMatrix(handDrawInfo.pos.x, handDrawInfo.pos.y);
+                    pushSpriteMatrix(posMatrix, spriteList);
+                    matrix3x3 scaleTransform = scaleMatrix3x3(-1.0f, 1.0f);
+                    pushSpriteMatrix(scaleTransform, spriteList);
+
+                    addSprite(0.0f, 0.0f, assets, ATLAS_KEY_GAME, "pencil_hand", spriteList, 0.2f, 1.0f);
+                    //drawHitBoxes(currentFrame, spriteList, assets, (float)-currentFrame->xOffset, (float)-currentFrame->yOffset);
+                    popSpriteMatrix(spriteList);
+                    popSpriteMatrix(spriteList);
+                }
+                else {
+                    addSprite(handDrawInfo.pos.x, handDrawInfo.pos.y, assets, ATLAS_KEY_GAME, "pencil_hand", spriteList, 0.2f, 1.0f);
+                }
             }
 
             if (zooming) {
@@ -1042,6 +1287,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                         if (tictactoeGame->repairPlayer) {
                             tictactoeGame->battleState = BATTLE_STATE_REPAIR;
                             tictactoeGame->timer = 0.0f;
+                            tictactoeGame->soundPlayed = false;
                         }
                         else {
                             tictactoeGame->battleState = BATTLE_STATE_NORMAL;
@@ -1063,6 +1309,9 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                         handDrawInfo.draw = true;
                         handDrawInfo.pos.x = playerState->x;
                         handDrawInfo.pos.y = 0.0f + t * (playerState->y - 0.0f);
+                        if (tictactoeGame->targetRepairPlayer == 0) {
+                            handDrawInfo.flip = true;
+                        }
                     }
                     else if (tictactoeGame->timer < 1.5f) {
                         repairPlayerAlpha = 0.0f;
@@ -1070,8 +1319,16 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                         handDrawInfo.draw = true;
                         handDrawInfo.pos.x = playerState->x;
                         handDrawInfo.pos.y = playerState->y;
+                        if (tictactoeGame->targetRepairPlayer == 0) {
+                            handDrawInfo.flip = true;
+                        }
                     }
                     else if (tictactoeGame->timer < 3.0f) {
+                        if (!tictactoeGame->soundPlayed) {
+                            tictactoeGame->soundPlayed = true;
+                            playSound(SOUND_KEY_WRITING, gameSounds);
+                        }
+
                         float t = ((tictactoeGame->timer - 1.5f) / 1.5f);
                         playerState->hitPoints = (int)(t * tictactoeGame->targetRepairHealth);
                         repairPlayerAlpha = t;
@@ -1079,6 +1336,9 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                         handDrawInfo.draw = true;
                         handDrawInfo.pos.x = playerState->x + sinf(t * 25.0f) * 25.0f;
                         handDrawInfo.pos.y = playerState->y + t * (0.0f-playerState->y);
+                        if (tictactoeGame->targetRepairPlayer == 0) {
+                            handDrawInfo.flip = true;
+                        }
                     }
                     else {
                         tictactoeGame->timer = 0.0f;
@@ -1088,8 +1348,8 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     }
                 } break;
                 case BATTLE_STATE_NORMAL: {
-                    updateCharacter(oPlayerState, input, 0, tictactoeGame);
-                    updateCharacter(xPlayerState, input, 1, tictactoeGame);
+                    updateCharacter(oPlayerState, input, 0, tictactoeGame, gameSounds);
+                    updateCharacter(xPlayerState, input, 1, tictactoeGame, gameSounds);
 
                     float minCharX = oPlayerState->x < xPlayerState->x ? oPlayerState->x : xPlayerState-> x;
                     float maxCharX = oPlayerState->x > xPlayerState->x ? oPlayerState->x : xPlayerState-> x;
@@ -1163,6 +1423,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                                 gameOver = true;
                                 oIsWinner = false;
                             }
+                            playSound(SOUND_KEY_PUNCH, gameSounds);
                         }
                     }
                     if (xHit && !oPlayerState->attackHit) {
@@ -1176,6 +1437,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                                 gameOver = true;
                                 oIsWinner = true;
                             }
+                            playSound(SOUND_KEY_PUNCH, gameSounds);
                         }
                     }
 
@@ -1245,7 +1507,21 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
             drawCharacter(xPlayerState, input, tictactoeGame, spriteList, assets, playerAlpha);
 
             if (handDrawInfo.draw) {
-                addSprite(handDrawInfo.pos.x, handDrawInfo.pos.y, assets, ATLAS_KEY_GAME, "pencil_hand", spriteList, 0.2f, 1.0f);
+
+                if (handDrawInfo.flip) {
+                    matrix3x3 posMatrix = translationMatrix(handDrawInfo.pos.x, handDrawInfo.pos.y);
+                    pushSpriteMatrix(posMatrix, spriteList);
+                    matrix3x3 scaleTransform = scaleMatrix3x3(-1.0f, 1.0f);
+                    pushSpriteMatrix(scaleTransform, spriteList);
+
+                    addSprite(0.0f, 0.0f, assets, ATLAS_KEY_GAME, "pencil_hand", spriteList, 0.2f, 1.0f);
+                    //drawHitBoxes(currentFrame, spriteList, assets, (float)-currentFrame->xOffset, (float)-currentFrame->yOffset);
+                    popSpriteMatrix(spriteList);
+                    popSpriteMatrix(spriteList);
+                }
+                else {
+                    addSprite(handDrawInfo.pos.x, handDrawInfo.pos.y, assets, ATLAS_KEY_GAME, "pencil_hand", spriteList, 0.2f, 1.0f);
+                }
             }
 
             //addSprite(oPlayerState->x, oPlayerState->y, assets, ATLAS_KEY_HITBOX_EDITOR,   "hitbox_frame_data", spriteList);

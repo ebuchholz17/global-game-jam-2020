@@ -40,7 +40,9 @@ enum atlas_key {
 };
 
 enum sound_key {
-    SOUND_KEY_MENU_BUTTON
+    SOUND_KEY_WHOOSH,
+    SOUND_KEY_PUNCH,
+    SOUND_KEY_WRITING
 };
 
 struct sound_asset {
