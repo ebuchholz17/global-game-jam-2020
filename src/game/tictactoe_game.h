@@ -6,8 +6,10 @@
 #define KNOCKBACK 200.0f
 
 enum tictactoe_game_state{
+    TICTACTOE_GAME_STATE_TITLE,
     TICTACTOE_GAME_STATE_TIC_TAC_TOE,
-    TICTACTOE_GAME_STATE_BATTLE
+    TICTACTOE_GAME_STATE_BATTLE,
+    TICTACTOE_GAME_STATE_GAME_END
 };
 
 struct animation_state {
@@ -54,17 +56,26 @@ struct tictactoe_input {
     bool downJustPressed;
     bool punch;
     bool punchJustPressed;
+    bool kick;
+    bool kickJustPressed;
 };
 
 enum battle_state {
     BATTLE_STATE_NORMAL,
+    BATTLE_STATE_ZOOM,
     BATTLE_STATE_OVER,
+    BATTLE_STATE_REPAIR,
     BATTLE_STATE_STARTED
 };
 
 enum tictactoe_phase {
     TICTACTOE_PHASE_CHOOSING_CELL,
-    TICTACTOE_PHASE_BATTLE_OVER
+    TICTACTOE_PHASE_BATTLE_OVER,
+    TICTACTOE_PHASE_ZOOM,
+    TICTACTOE_PHASE_FADE_CELLS,
+    TICTACTOE_PHASE_DECIDE_REINFORCEMENT,
+    TICTACTOE_PHASE_CHOOSE_REINFORCEMENT,
+    TICTACTOE_PHASE_WIN_PAUSE
 };
 
 struct ttt_cell {
@@ -82,6 +93,11 @@ struct tictactoe_state {
 
     bool oHasBackup;
     bool xHasBackup;
+
+    vector2 zoomTarget;
+    float zoomScale;
+    float zoomTimer;
+    float zoomT;
 };
 
 struct battle_result {
@@ -102,6 +118,12 @@ struct reticule_info {
 struct status_text_info {
     bool draw;
     char *text;
+    float xOffset;
+};
+
+struct hand_draw_info {
+    bool draw;
+    vector2 pos;
 };
 
 struct tictactoe_game {
@@ -121,7 +143,20 @@ struct tictactoe_game {
     float cameraX;
     bool oWonFight;
     float timer;
+    float zoomT;
     float vel;
+
+    bool oNeighbors[9];
+    bool xNeighbors[9];
+    bool destroyedCells[9];
+    bool blinkingCells[9];
+    bool blinkOn;
+
+    bool oWinsWholeGame;
+
+    bool repairPlayer;
+    int targetRepairPlayer;
+    int targetRepairHealth;
 };
 
 #endif
