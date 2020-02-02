@@ -527,7 +527,6 @@ void onTargetChosen (int cell, int oppCell, tictactoe_state *tttState, tictactoe
     tttState->phase = TICTACTOE_PHASE_ZOOM;
     tttState->zoomTimer = 0.0f;
     tttState->zoomScale = 1.0f;
-    tttState->oTurn = !tttState->oTurn;
 
     tictactoeGame->battleState = BATTLE_STATE_STARTED;
     ttt_cell *oCell;
@@ -583,7 +582,7 @@ void onReinforcementChosen (tictactoe_state *tttState, tictactoe_game *tictactoe
     oCell = &tttState->board[tictactoeGame->battleResult.oNum];
     xCell = &tttState->board[tictactoeGame->battleResult.xNum];
 
-    if ((!tttState->oTurn && !result->oWin) || (tttState->oTurn && result->oWin)) {
+    if ((tttState->oTurn && !result->oWin) || (!tttState->oTurn && result->oWin)) {
         tttState->targetingCell = tttState->selectedCell;
     }
 
@@ -908,7 +907,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     else {
                         int numEnemyCells = 0;
                         int lastEnemyCell = -1;
-                        if ((!tttState->oTurn && result->oWin) || (tttState->oTurn && !result->oWin)) {
+                        if ((tttState->oTurn && result->oWin) || (!tttState->oTurn && !result->oWin)) {
                             for (int i = 0; i < 9; ++i) {
                                 tictactoeGame->blinkingCells[i] = false;
                                 if (tictactoeGame->enemyCells[i] && !tictactoeGame->destroyedCells[i]) {
@@ -924,7 +923,6 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                                 onTargetChosen(tttState->targetingCell, tttState->selectedCell, tttState, tictactoeGame, tttState->oTurn ? 0 : 1);
                             }
                             else {
-                                tttState->oTurn = !tttState->oTurn;
                                 tttState->phase = TICTACTOE_PHASE_CHOOSE_TARGET;
                                 tictactoeGame->timer = 0.0f;
                             }
@@ -987,7 +985,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     else if (tttInput.kickJustPressed) {
                         int numEnemyCells = 0;
                         battle_result *result = &tictactoeGame->battleResult;
-                        if ((!tttState->oTurn && result->oWin) || (tttState->oTurn && !result->oWin)) {
+                        if ((tttState->oTurn && result->oWin) || (!tttState->oTurn && !result->oWin)) {
                             for (int i = 0; i < 9; ++i) {
                                 tictactoeGame->blinkingCells[i] = false;
                                 if (tictactoeGame->enemyCells[i] && !tictactoeGame->destroyedCells[i]) {
@@ -997,7 +995,6 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                             }
                         }
                         if (numEnemyCells > 0) {
-                            tttState->oTurn = !tttState->oTurn;
                             tttState->phase = TICTACTOE_PHASE_CHOOSE_TARGET;
                             tictactoeGame->timer = 0.0f;
                         }
@@ -1104,6 +1101,7 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                             tictactoeGame->oWinsWholeGame = false;
                         }
                         else {
+                            tttState->oTurn = !tttState->oTurn;
                             tttState->phase = TICTACTOE_PHASE_CHOOSING_CELL;
                         }
                     }
@@ -1299,7 +1297,6 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                 } break;
                 case BATTLE_STATE_REPAIR: {
                     tictactoeGame->timer += DELTA_TIME;
-
                     
                     character_state *playerState = tictactoeGame->targetRepairPlayer == 0 ? &tictactoeGame->oPlayerState : &tictactoeGame->xPlayerState;
                     if (tictactoeGame->timer < 1.0f) {

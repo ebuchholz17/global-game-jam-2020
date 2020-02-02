@@ -4,7 +4,7 @@
         <key>fileFormatVersion</key>
         <int>4</int>
         <key>texturePackerVersion</key>
-        <string>5.1.0</string>
+        <string>4.12.0</string>
         <key>autoSDSettings</key>
         <array>
             <struct type="AutoSDSettings">
@@ -208,6 +208,64 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">tictactoe/crouching_block_o.png</key>
+            <key type="filename">tictactoe/crouching_block_x.png</key>
+            <key type="filename">tictactoe/crouching_idle_o.png</key>
+            <key type="filename">tictactoe/crouching_idle_x.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,21,31,41</rect>
+                <key>scale9Paddings</key>
+                <rect>16,21,31,41</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">tictactoe/crouching_hit_o.png</key>
+            <key type="filename">tictactoe/crouching_hit_x.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>16,20,31,41</rect>
+                <key>scale9Paddings</key>
+                <rect>16,20,31,41</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">tictactoe/crouching_kick_o.png</key>
+            <key type="filename">tictactoe/crouching_kick_x.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>20,22,40,44</rect>
+                <key>scale9Paddings</key>
+                <rect>20,22,40,44</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">tictactoe/crouching_punch_o.png</key>
+            <key type="filename">tictactoe/crouching_punch_x.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>22,21,43,41</rect>
+                <key>scale9Paddings</key>
+                <rect>22,21,43,41</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">tictactoe/eraser_hand.png</key>
             <key type="filename">tictactoe/pencil_hand.png</key>
             <struct type="IndividualSpriteSettings">
@@ -222,6 +280,20 @@
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
+            <key type="filename">tictactoe/hit_air_o.png</key>
+            <key type="filename">tictactoe/hit_air_x.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>19,13,38,26</rect>
+                <key>scale9Paddings</key>
+                <rect>19,13,38,26</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">tictactoe/hp_segment.png</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -232,6 +304,48 @@
                 <rect>3,3,6,6</rect>
                 <key>scale9Paddings</key>
                 <rect>3,3,6,6</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">tictactoe/jump_kick_o.png</key>
+            <key type="filename">tictactoe/jump_kick_x.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>21,22,41,45</rect>
+                <key>scale9Paddings</key>
+                <rect>21,22,41,45</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">tictactoe/jump_o.png</key>
+            <key type="filename">tictactoe/jump_x.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>15,23,30,46</rect>
+                <key>scale9Paddings</key>
+                <rect>15,23,30,46</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">tictactoe/jump_punch_o.png</key>
+            <key type="filename">tictactoe/jump_punch_x.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>21,23,43,46</rect>
+                <key>scale9Paddings</key>
+                <rect>21,23,43,46</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
@@ -291,6 +405,20 @@
                 <rect>13,28,26,57</rect>
                 <key>scale9Paddings</key>
                 <rect>13,28,26,57</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
+            <key type="filename">tictactoe/standing_kick_o.png</key>
+            <key type="filename">tictactoe/standing_kick_x.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>25,30,49,59</rect>
+                <key>scale9Paddings</key>
+                <rect>25,30,49,59</rect>
                 <key>scale9FromFile</key>
                 <false/>
             </struct>
