@@ -377,7 +377,7 @@ int WINAPI WinMain (HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLin
 
     if (RegisterClassA(&windowClass)) {
 
-        bool fullScreen = false;
+        bool fullScreen = true;
         if (fullScreen) {
             gameWidth = 1366;
             gameHeight = 768;

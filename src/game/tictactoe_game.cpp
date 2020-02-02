@@ -661,6 +661,9 @@ void onPlayerHit (character_state *character, int playerIndex, tictactoe_game *t
     }
     if (!character->grounded) {
         character->timer = -24;
+        if (character->hitPoints <= 0) {
+            character->timer = -3600;
+        }
         character->velocity.y = -300.0f;
         character->velocity.x = 0.0f;
         character->y -= 30.0f;
@@ -1687,10 +1690,10 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     if (oHit && !xPlayerState->attackHit) {
                         xPlayerState->attackHit = true;
                         attack_info attackInfo = xPlayerState->attackInfo;
-                        if (oPlayerState->state != ACTION_STATE_HIT_GROUND && oPlayerState->hitPoints > 0 && oPlayerState->blocking && oPlayerState->crouching != attackInfo.high) {
+                        if (oPlayerState->blocking && oPlayerState->crouching != attackInfo.high) {
                             onAttackBlocked(oPlayerState, 0, tictactoeGame);
                         }
-                        else{
+                        else if (oPlayerState->state != ACTION_STATE_HIT_GROUND && oPlayerState->hitPoints > 0) {
                             onPlayerHit(oPlayerState, 0, tictactoeGame, attackInfo.damage, xPlayerState->x);
                             playSound(SOUND_KEY_PUNCH, gameSounds);
                         }
@@ -1698,10 +1701,10 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     if (xHit && !oPlayerState->attackHit) {
                         oPlayerState->attackHit = true;
                         attack_info attackInfo = oPlayerState->attackInfo;
-                        if (xPlayerState->state != ACTION_STATE_HIT_GROUND && xPlayerState->hitPoints > 0 && xPlayerState->blocking && xPlayerState->crouching != attackInfo.high) {
+                        if (xPlayerState->blocking && xPlayerState->crouching != attackInfo.high) {
                             onAttackBlocked(xPlayerState, 1, tictactoeGame);
                         }
-                        else{
+                        else if (xPlayerState->state != ACTION_STATE_HIT_GROUND && xPlayerState->hitPoints > 0) {
                             onPlayerHit(xPlayerState, 1, tictactoeGame, attackInfo.damage, oPlayerState->x);
                             playSound(SOUND_KEY_PUNCH, gameSounds);
                         }
