@@ -58,11 +58,13 @@ struct tictactoe_input {
 
 enum battle_state {
     BATTLE_STATE_NORMAL,
-    BATTLE_STATE_OVER
+    BATTLE_STATE_OVER,
+    BATTLE_STATE_STARTED
 };
 
 enum tictactoe_phase {
-    TICTACTOE_PHASE_CHOOSING_CELL
+    TICTACTOE_PHASE_CHOOSING_CELL,
+    TICTACTOE_PHASE_BATTLE_OVER
 };
 
 struct ttt_cell {
@@ -77,6 +79,29 @@ struct tictactoe_state {
 
     int selectedCell;
     ttt_cell board[9];
+
+    bool oHasBackup;
+    bool xHasBackup;
+};
+
+struct battle_result {
+    int oNum;
+    int xNum;
+
+    bool oWin;
+    int oHealth;
+    int xHealth;
+};
+
+struct reticule_info {
+    bool draw;
+    char *key;
+    int cellNum;
+};
+
+struct status_text_info {
+    bool draw;
+    char *text;
 };
 
 struct tictactoe_game {
@@ -91,6 +116,7 @@ struct tictactoe_game {
     character_state xPlayerState;
 
     battle_state battleState;
+    battle_result battleResult;
 
     float cameraX;
     bool oWonFight;

@@ -73,8 +73,8 @@ void initTicTacToeGame (memory_arena *memory, game_assets *assets, tictactoe_gam
 
     assert(tictactoeGame->numAnimationDatas <= MAX_NUM_FRAME_DATA);
 
-    //tictactoeGame->state = TICTACTOE_GAME_STATE_TIC_TAC_TOE;
-    tictactoeGame->state = TICTACTOE_GAME_STATE_BATTLE;
+    tictactoeGame->state = TICTACTOE_GAME_STATE_TIC_TAC_TOE;
+    //tictactoeGame->state = TICTACTOE_GAME_STATE_BATTLE;
 
     tictactoe_state *ttt = &tictactoeGame->tttState;
     ttt->phase = TICTACTOE_PHASE_CHOOSING_CELL;
@@ -404,6 +404,47 @@ vector2 cellPos (int i) {
     return Vector2(117.0f + 70.0f * col, 50.0f + 65.0f * row);
 }
 
+
+int checkIfOpponentInAdjacentCell (tictactoe_state *tttState, int cellNum) {
+    ttt_cell *cell = &tttState->board[cellNum];
+    int cellValue = cell->value;
+    int opponentValue = cellValue == 1 ? 2 : 1;
+
+    int row = cellNum / 3;
+    int col = cellNum % 3;
+
+    // TODO(ebuchholz): allow multiple opponents
+    if (row > 0) {
+        int oppCellNum = (row-1) * 3 + col;
+        ttt_cell *neighborCell = &tttState->board[oppCellNum];
+        if (neighborCell->value == opponentValue) {
+            return oppCellNum;
+        }
+    }
+    if (row < 2) {
+        int oppCellNum = (row+1) * 3 + col;
+        ttt_cell *neighborCell = &tttState->board[oppCellNum];
+        if (neighborCell->value == opponentValue) {
+            return oppCellNum;
+        }
+    }
+    if (col > 0) {
+        int oppCellNum = row * 3 + col - 1;
+        ttt_cell *neighborCell = &tttState->board[oppCellNum];
+        if (neighborCell->value == opponentValue) {
+            return oppCellNum;
+        }
+    }
+    if (col < 2) {
+        int oppCellNum = row * 3 + col + 1;
+        ttt_cell *neighborCell = &tttState->board[oppCellNum];
+        if (neighborCell->value == opponentValue) {
+            return oppCellNum;
+        }
+    }
+    return -1;
+}
+
 void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory, 
                           game_assets *assets, game_input *input, sprite_list *spriteList, tictactoe_game *tictactoeGame)
 {
@@ -419,22 +460,8 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
         case TICTACTOE_GAME_STATE_TIC_TAC_TOE: {
             tictactoe_state *tttState = &tictactoeGame->tttState;
 
-            addSprite(0.0f, 0.0f, assets, ATLAS_KEY_GAME, "tictactoe_backing", spriteList);
-            addSprite(10.0f, 5.0f, assets, ATLAS_KEY_GAME, "ui", spriteList);
-
-            for (int i = 0; i < 9; ++i) {
-                vector2 pos = cellPos(i);
-                ttt_cell *cell = &tttState->board[i];
-                if (cell->value != 0) {
-
-                    if (cell->value == 1) {
-                        addSprite(pos.x, pos.y, assets, ATLAS_KEY_GAME, "o", spriteList, 0.5f, 0.5f);
-                    }
-                    else {
-                        addSprite(pos.x, pos.y, assets, ATLAS_KEY_GAME, "x", spriteList, 0.5f, 0.5f);
-                    }
-                }
-            }
+            reticule_info reticuleInfo = {};
+            status_text_info statusTextInfo = {};
 
             switch (tttState->phase) {
                 case TICTACTOE_PHASE_CHOOSING_CELL: {
@@ -476,34 +503,119 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                         ttt_cell *cell = &tttState->board[tttState->selectedCell];
                         if (cell->value == 0) {
                             cell->value = playerIndex + 1;
+                            cell->health = 100;
                             tttState->oTurn = !tttState->oTurn;
+                            int oppCell = checkIfOpponentInAdjacentCell(tttState, tttState->selectedCell);
+                            // go to battle
+                            if (oppCell != -1) {
+                                tictactoeGame->state = TICTACTOE_GAME_STATE_BATTLE;
+                                tictactoeGame->battleState = BATTLE_STATE_STARTED;
+                                if (playerIndex == 0) {
+                                    tictactoeGame->battleResult.oNum = tttState->selectedCell;
+                                    tictactoeGame->battleResult.xNum = oppCell;
+
+                                    ttt_cell *oCell = &tttState->board[tttState->selectedCell];
+                                    tictactoeGame->battleResult.oHealth = oCell->health;
+
+                                    ttt_cell *xCell = &tttState->board[oppCell];
+                                    tictactoeGame->battleResult.xHealth = xCell->health;
+                                }
+                                else {
+                                    tictactoeGame->battleResult.oNum = oppCell;
+                                    tictactoeGame->battleResult.xNum = tttState->selectedCell;
+                                    
+                                    ttt_cell *oCell = &tttState->board[oppCell];
+                                    tictactoeGame->battleResult.oHealth = oCell->health;
+
+                                    ttt_cell *xCell = &tttState->board[tttState->selectedCell];
+                                    tictactoeGame->battleResult.xHealth = xCell->health;
+                                }
+                            }
                             tttState->selectedCell = 4;
                         }
                     }
 
-                    char *reticuleKey;
-                    char *statusText;
+                    statusTextInfo.draw = true;
+                    reticuleInfo.draw = true;
                     if (tttState->oTurn) {
-                        reticuleKey = "blue_reticule";
-                        statusText = "P1's turn";
+                        reticuleInfo.key = "blue_reticule";
+                        statusTextInfo.text = "P1's turn";
                     }
                     else {
-                        reticuleKey = "red_reticule";
-                        statusText = "P2's turn";
+                        reticuleInfo.key = "red_reticule";
+                        statusTextInfo.text = "P2's turn";
                     }
-
-                    vector2 pos = cellPos(tttState->selectedCell);
-                    addSprite(pos.x, pos.y- 9.0f, assets, ATLAS_KEY_GAME, reticuleKey, spriteList, 0.5f, 0.5f);
-
-                    addText(150, 5, statusText, assets, TEXTURE_KEY_FONT_2, spriteList);
+                    reticuleInfo.cellNum = tttState->selectedCell;
 
                 } break;
+                case TICTACTOE_PHASE_BATTLE_OVER: {
+                    battle_result *result = &tictactoeGame->battleResult;
+                    int victimCell = result->oWin ? result->xNum : result->oNum;
+                    int otherCell = result->oWin ? result->oNum : result->xNum;
+                    int otherCellHealth = result->oWin ? result->oHealth : result->xHealth;
+
+                    ttt_cell *cell = &tttState->board[victimCell];
+                    cell->value = 0;
+                    cell = &tttState->board[otherCell];
+                    cell->health = otherCellHealth;
+                    
+                    tttState->phase = TICTACTOE_PHASE_CHOOSING_CELL;
+                } break;
             }
+            
+            addSprite(0.0f, 0.0f, assets, ATLAS_KEY_GAME, "tictactoe_backing", spriteList);
+            addSprite(10.0f, 5.0f, assets, ATLAS_KEY_GAME, "ui", spriteList);
+
+            for (int i = 0; i < 9; ++i) {
+                vector2 pos = cellPos(i);
+                ttt_cell *cell = &tttState->board[i];
+                if (cell->value != 0) {
+
+                    if (cell->value == 1) {
+                        addSprite(pos.x, pos.y, assets, ATLAS_KEY_GAME, "o", spriteList, 0.5f, 0.5f);
+                    }
+                    else {
+                        addSprite(pos.x, pos.y, assets, ATLAS_KEY_GAME, "x", spriteList, 0.5f, 0.5f);
+                    }
+                }
+            }
+
+            if (reticuleInfo.draw) {
+                vector2 pos = cellPos(reticuleInfo.cellNum);
+                addSprite(pos.x, pos.y- 9.0f, assets, ATLAS_KEY_GAME, reticuleInfo.key, spriteList, 0.5f, 0.5f);
+            }
+
+            if (statusTextInfo.draw) {
+                addText(150, 5, statusTextInfo.text, assets, TEXTURE_KEY_FONT_2, spriteList);
+            }
+
         } break;
         case TICTACTOE_GAME_STATE_BATTLE: {
             character_state *oPlayerState = &tictactoeGame->oPlayerState;
             character_state *xPlayerState = &tictactoeGame->xPlayerState;
             switch (tictactoeGame->battleState) {
+                case BATTLE_STATE_STARTED: {
+                    oPlayerState->grounded = true;
+                    oPlayerState->x = 300.0f;
+                    oPlayerState->y = 180.0f;
+                    oPlayerState->animState.animationData = DATA_KEY_HITBOX_STANDING_WALK_0;
+                    oPlayerState->facing = CHARACTER_FACING_RIGHT;
+                    oPlayerState->hitPoints = tictactoeGame->battleResult.oHealth;
+                    oPlayerState->state = ACTION_STATE_FREE;
+                    oPlayerState->blocking = false;
+
+                    xPlayerState->grounded = true;
+                    xPlayerState->x = 468.0f;
+                    xPlayerState->y = 180.0f;
+                    xPlayerState->animState.animationData = DATA_KEY_HITBOX_STANDING_WALK_0;
+                    xPlayerState->facing = CHARACTER_FACING_LEFT;
+                    xPlayerState->hitPoints = tictactoeGame->battleResult.xHealth;
+                    xPlayerState->state = ACTION_STATE_FREE;
+                    xPlayerState->blocking = false;
+
+                    tictactoeGame->cameraX = 384.0f;
+                    tictactoeGame->battleState = BATTLE_STATE_NORMAL;
+                } break;
                 case BATTLE_STATE_NORMAL: {
                     updateCharacter(oPlayerState, input, 0, tictactoeGame);
                     updateCharacter(xPlayerState, input, 1, tictactoeGame);
@@ -628,6 +740,11 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
                     tictactoeGame->timer += DELTA_TIME;
                     if (tictactoeGame->timer >= 1.0f) {
                         tictactoeGame->state = TICTACTOE_GAME_STATE_TIC_TAC_TOE;
+
+                        tictactoeGame->battleResult.oWin = tictactoeGame->oWonFight;
+                        tictactoeGame->battleResult.oHealth = oPlayerState->hitPoints;
+                        tictactoeGame->battleResult.xHealth = xPlayerState->hitPoints;
+                        tictactoeGame->tttState.phase = TICTACTOE_PHASE_BATTLE_OVER;
                     }
                 } break;
             }
