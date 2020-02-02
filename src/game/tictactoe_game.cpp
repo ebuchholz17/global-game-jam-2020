@@ -73,7 +73,13 @@ void initTicTacToeGame (memory_arena *memory, game_assets *assets, tictactoe_gam
 
     assert(tictactoeGame->numAnimationDatas <= MAX_NUM_FRAME_DATA);
 
+    //tictactoeGame->state = TICTACTOE_GAME_STATE_TIC_TAC_TOE;
     tictactoeGame->state = TICTACTOE_GAME_STATE_BATTLE;
+
+    tictactoe_state *ttt = &tictactoeGame->tttState;
+    ttt->phase = TICTACTOE_PHASE_CHOOSING_CELL;
+    ttt->oTurn = randomFloat() > 0.5f;
+    ttt->selectedCell = 4;
 
     character_state *oPlayerState = &tictactoeGame->oPlayerState;
     oPlayerState->grounded = true;
@@ -112,18 +118,34 @@ void getInputForPlayer (game_input *input, tictactoe_input *tttInput, int player
     if (playerIndex == 0) {
         tttInput->left = input->controllers[0].dPadLeft.down || input->controllers[0].leftStickLeft.down || input->aKey.down;
         tttInput->leftJustPressed = input->controllers[0].dPadLeft.justPressed || input->controllers[0].leftStickLeft.justPressed || input->aKey.justPressed;
-        tttInput->right = input->controllers[0].dPadRight.down || input->controllers[0].leftStickRight.down || input->sKey.down;
-        tttInput->rightJustPressed = input->controllers[0].dPadRight.justPressed || input->controllers[0].leftStickRight.justPressed || input->sKey.justPressed;
-        tttInput->punch = input->controllers[0].aButton.down  || input->dKey.down;
-        tttInput->punchJustPressed = input->controllers[0].aButton.justPressed  || input->dKey.justPressed;
+
+        tttInput->right = input->controllers[0].dPadRight.down || input->controllers[0].leftStickRight.down || input->dKey.down;
+        tttInput->rightJustPressed = input->controllers[0].dPadRight.justPressed || input->controllers[0].leftStickRight.justPressed || input->dKey.justPressed;
+
+        tttInput->up = input->controllers[0].dPadUp.down || input->controllers[0].leftStickUp.down || input->wKey.down;
+        tttInput->upJustPressed = input->controllers[0].dPadUp.justPressed || input->controllers[0].leftStickUp.justPressed || input->wKey.justPressed;
+
+        tttInput->down = input->controllers[0].dPadDown.down || input->controllers[0].leftStickDown.down || input->sKey.down;
+        tttInput->downJustPressed = input->controllers[0].dPadDown.justPressed || input->controllers[0].leftStickDown.justPressed || input->sKey.justPressed;
+
+        tttInput->punch = input->controllers[0].aButton.down  || input->fKey.down;
+        tttInput->punchJustPressed = input->controllers[0].aButton.justPressed  || input->fKey.justPressed;
     }
     else {
         tttInput->left = input->controllers[1].dPadLeft.down || input->controllers[1].leftStickLeft.down || input->hKey.down;
         tttInput->leftJustPressed = input->controllers[1].dPadLeft.justPressed || input->controllers[1].leftStickLeft.justPressed || input->hKey.justPressed;
-        tttInput->right = input->controllers[1].dPadRight.down || input->controllers[1].leftStickRight.down || input->jKey.down;
-        tttInput->rightJustPressed = input->controllers[1].dPadRight.justPressed || input->controllers[1].leftStickRight.justPressed || input->jKey.justPressed;
-        tttInput->punch = input->controllers[1].aButton.down  || input->kKey.down;
-        tttInput->punchJustPressed = input->controllers[1].aButton.justPressed  || input->kKey.justPressed;
+
+        tttInput->right = input->controllers[1].dPadRight.down || input->controllers[1].leftStickRight.down || input->kKey.down;
+        tttInput->rightJustPressed = input->controllers[1].dPadRight.justPressed || input->controllers[1].leftStickRight.justPressed || input->kKey.justPressed;
+
+        tttInput->up = input->controllers[1].dPadUp.down || input->controllers[1].leftStickUp.down || input->uKey.down;
+        tttInput->upJustPressed = input->controllers[1].dPadUp.justPressed || input->controllers[1].leftStickUp.justPressed || input->uKey.justPressed;
+
+        tttInput->down = input->controllers[1].dPadDown.down || input->controllers[1].leftStickDown.down || input->jKey.down;
+        tttInput->downJustPressed = input->controllers[1].dPadDown.justPressed || input->controllers[1].leftStickDown.justPressed || input->jKey.justPressed;
+
+        tttInput->punch = input->controllers[1].aButton.down  || input->gKey.down;
+        tttInput->punchJustPressed = input->controllers[1].aButton.justPressed  || input->gKey.justPressed;
     }
 }
 
@@ -376,6 +398,12 @@ void onAttackBlocked (character_state *character, int playerIndex, tictactoe_gam
     character->timer = 0;
 }
 
+vector2 cellPos (int i) {
+    int col = i % 3;
+    int row = i / 3;
+    return Vector2(117.0f + 70.0f * col, 50.0f + 65.0f * row);
+}
+
 void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory, 
                           game_assets *assets, game_input *input, sprite_list *spriteList, tictactoe_game *tictactoeGame)
 {
@@ -389,7 +417,88 @@ void updateTicTacToeGame (memory_arena *memory, memory_arena *tempMemory,
 
     switch (tictactoeGame->state) {
         case TICTACTOE_GAME_STATE_TIC_TAC_TOE: {
+            tictactoe_state *tttState = &tictactoeGame->tttState;
 
+            addSprite(0.0f, 0.0f, assets, ATLAS_KEY_GAME, "tictactoe_backing", spriteList);
+            addSprite(10.0f, 5.0f, assets, ATLAS_KEY_GAME, "ui", spriteList);
+
+            for (int i = 0; i < 9; ++i) {
+                vector2 pos = cellPos(i);
+                ttt_cell *cell = &tttState->board[i];
+                if (cell->value != 0) {
+
+                    if (cell->value == 1) {
+                        addSprite(pos.x, pos.y, assets, ATLAS_KEY_GAME, "o", spriteList, 0.5f, 0.5f);
+                    }
+                    else {
+                        addSprite(pos.x, pos.y, assets, ATLAS_KEY_GAME, "x", spriteList, 0.5f, 0.5f);
+                    }
+                }
+            }
+
+            switch (tttState->phase) {
+                case TICTACTOE_PHASE_CHOOSING_CELL: {
+                    tictactoe_input tttInput;
+                    int playerIndex = tttState->oTurn? 0 : 1;
+                    getInputForPlayer(input, &tttInput, playerIndex);
+
+                    if (tttInput.upJustPressed) {
+                        int newSelectedCell = tttState->selectedCell - 3;
+                        if (newSelectedCell < 0) {
+                            newSelectedCell += 9;
+                        }
+                        tttState->selectedCell = newSelectedCell;
+                    }
+                    if (tttInput.downJustPressed) {
+                        int newSelectedCell = tttState->selectedCell + 3;
+                        if (newSelectedCell >= 9) {
+                            newSelectedCell -= 9;
+                        }
+                        tttState->selectedCell = newSelectedCell;
+                    }
+                    if (tttInput.leftJustPressed) {
+                        int newSelectedCell = tttState->selectedCell - 1;
+                        if (newSelectedCell < 0) {
+                            newSelectedCell += 9;
+                        }
+                        tttState->selectedCell = newSelectedCell;
+                    }
+                    if (tttInput.rightJustPressed) {
+                        int newSelectedCell = tttState->selectedCell + 1;
+                        if (newSelectedCell >= 9) {
+                            newSelectedCell -= 9;
+                        }
+                        tttState->selectedCell = newSelectedCell;
+                    }
+
+                    if (tttInput.punchJustPressed) {
+
+                        ttt_cell *cell = &tttState->board[tttState->selectedCell];
+                        if (cell->value == 0) {
+                            cell->value = playerIndex + 1;
+                            tttState->oTurn = !tttState->oTurn;
+                            tttState->selectedCell = 4;
+                        }
+                    }
+
+                    char *reticuleKey;
+                    char *statusText;
+                    if (tttState->oTurn) {
+                        reticuleKey = "blue_reticule";
+                        statusText = "P1's turn";
+                    }
+                    else {
+                        reticuleKey = "red_reticule";
+                        statusText = "P2's turn";
+                    }
+
+                    vector2 pos = cellPos(tttState->selectedCell);
+                    addSprite(pos.x, pos.y- 9.0f, assets, ATLAS_KEY_GAME, reticuleKey, spriteList, 0.5f, 0.5f);
+
+                    addText(150, 5, statusText, assets, TEXTURE_KEY_FONT_2, spriteList);
+
+                } break;
+            }
         } break;
         case TICTACTOE_GAME_STATE_BATTLE: {
             character_state *oPlayerState = &tictactoeGame->oPlayerState;

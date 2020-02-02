@@ -22,6 +22,7 @@ struct animated_mesh_asset {
 
 enum texture_key {
     TEXTURE_KEY_FONT,
+    TEXTURE_KEY_FONT_2,
     TEXTURE_KEY_GAME_ATLAS,
     TEXTURE_KEY_HITBOX_EDITOR_ATLAS
 };

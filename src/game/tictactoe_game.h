@@ -48,6 +48,10 @@ struct tictactoe_input {
     bool leftJustPressed;
     bool right;
     bool rightJustPressed;
+    bool up;
+    bool upJustPressed;
+    bool down;
+    bool downJustPressed;
     bool punch;
     bool punchJustPressed;
 };
@@ -57,7 +61,27 @@ enum battle_state {
     BATTLE_STATE_OVER
 };
 
+enum tictactoe_phase {
+    TICTACTOE_PHASE_CHOOSING_CELL
+};
+
+struct ttt_cell {
+    int value;
+    bool defeated;
+    int health;
+};
+
+struct tictactoe_state {
+    bool oTurn;
+    tictactoe_phase phase;
+
+    int selectedCell;
+    ttt_cell board[9];
+};
+
 struct tictactoe_game {
+    tictactoe_state tttState;
+
     character_animation_data animations[MAX_NUM_FRAME_DATA];
     int numAnimationDatas;
 
