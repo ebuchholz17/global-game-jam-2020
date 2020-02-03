@@ -379,8 +379,8 @@ int WINAPI WinMain (HINSTANCE instance, HINSTANCE prevInstance, LPSTR commandLin
 
         bool fullScreen = true;
         if (fullScreen) {
-            gameWidth = 1366;
-            gameHeight = 768;
+            gameWidth = 2560;
+            gameHeight = 1440;
             DEVMODE dmScreenSettings;                   
             memset(&dmScreenSettings, 0, sizeof(dmScreenSettings));  
             dmScreenSettings.dmSize = sizeof(dmScreenSettings);     
