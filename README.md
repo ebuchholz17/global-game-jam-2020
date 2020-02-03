@@ -1,3 +1,5 @@
+- [Play Tic-Tac-Foes](https://ebuchholz17.github.io/quick-make/tictacfoes/index.html)
+
 Just an ordinary game of tic-tac-toe...?
 
 When X's and O's meet on the battlefield, they come alive in hand-to-hand combat. Upend the traditional "solved" tic-tac-toe strategy by using adjacent friendly cells to "repair" your fighters.
